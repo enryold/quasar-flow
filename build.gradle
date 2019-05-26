@@ -11,8 +11,7 @@ sourceCompatibility = 1.8
 
 test {
     useJUnitPlatform()
-    maxHeapSize = "2800m"
-    jvmArgs '-javaagent:'+file('.')+'/quasar-core-0.7.10.jar', '-Dco.paralleluniverse.fibers.verifyInstrumentation=false', '-Dco.paralleluniverse.fibers.detectRunawayFibers=false'
+    jvmArgs '-javaagent:'+file('.')+'/quasar-core-0.7.10.jar', '-Xmx2800m', '-Dco.paralleluniverse.fibers.verifyInstrumentation=false', '-Dco.paralleluniverse.fibers.detectRunawayFibers=false'
 }
 
 

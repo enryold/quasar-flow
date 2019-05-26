@@ -6,6 +6,7 @@ jdk:
 
 script:
   - ./gradlew build --stacktrace
+  - cat /home/travis/build/enryold/quasar-flow/build/reports/tests/test/index.html
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
