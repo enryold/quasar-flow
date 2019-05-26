@@ -6,6 +6,7 @@ import it.enryold.quasarflow.models.User;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.TimeUnit;
 
 public class TestUtils {
 
@@ -44,10 +45,26 @@ public class TestUtils {
         return new LinkedTransferQueue<>();
     }
 
-    protected <T>List<T> getResults(LinkedTransferQueue<T> channel)
-    {
+    protected <T>List<T> getResults(LinkedTransferQueue<T> queue, int expectedElements, int timeOut, TimeUnit unit) throws InterruptedException {
+        T elm;
         List<T> results = new ArrayList<>();
-        channel.drainTo(results);
+        long deadline = System.nanoTime() + unit.toNanos(timeOut);
+
+        do{
+            elm = queue.poll(1, TimeUnit.NANOSECONDS);
+
+            if (elm == null) { // not enough elements immediately available; will have to poll
+                elm = queue.poll(deadline - System.nanoTime(), TimeUnit.NANOSECONDS);
+                if (elm == null) {
+                    break; // we already waited enough, and there are no more elements in sight
+                }
+                results.add(elm);
+            }else{
+                results.add(elm);
+            }
+        }
+        while (results.size() < expectedElements);
+
         return results;
     }
 

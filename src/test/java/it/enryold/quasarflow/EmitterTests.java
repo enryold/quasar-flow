@@ -11,8 +11,9 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class EmitterTests extends TestUtils {
 
@@ -46,14 +47,15 @@ public class EmitterTests extends TestUtils {
                 .consume(resultQueue::put)
                 .start();
 
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
 
-        while (resultDeadline > System.currentTimeMillis()){
+        List<String> results = null;
+        try {
+            results = getResults(resultQueue, elements, flushSeconds, TimeUnit.SECONDS);
+            assertEquals(results.size(), elements, "Elements are:" + results.size() + " expected " + elements);
+        } catch (InterruptedException e) {
+            fail();
         }
 
-        List<String> results = getResults(resultQueue);
-
-        assertTrue(results.size() == elements, "Elements are:"+results.size()+" expected "+elements);
 
     }
 
@@ -80,16 +82,23 @@ public class EmitterTests extends TestUtils {
                 .flow()
                 .start();
 
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
 
-        while (resultDeadline > System.currentTimeMillis()){
+        try {
+            List<String> results1 = getResults(resultQueue1, elements, flushSeconds, TimeUnit.SECONDS);
+            assertEquals(results1.size(), elements, "Elements are:" + results1.size() + " expected " + elements);
+        } catch (InterruptedException e) {
+            fail();
         }
 
-        List<String> results1 = getResults(resultQueue1);
-        List<String> results2 = getResults(resultQueue2);
+        try {
+            List<String> results2 = getResults(resultQueue2, elements, flushSeconds, TimeUnit.SECONDS);
+            assertEquals(results2.size(), elements, "Elements are:" + results2.size() + " expected " + elements);
+        } catch (InterruptedException e) {
+            fail();
+        }
 
-        assertTrue(results1.size() == elements, "Elements are:"+results1.size()+" expected "+elements);
-        assertTrue(results2.size() == elements, "Elements are:"+results2.size()+" expected "+elements);
+
+
 
     }
 
@@ -125,16 +134,22 @@ public class EmitterTests extends TestUtils {
                 .flow()
                 .start();
 
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
 
-        while (resultDeadline > System.currentTimeMillis()){
+
+        try {
+            List<String> results1 = getResults(resultQueueA, 2, flushSeconds, TimeUnit.SECONDS);
+            assertEquals(results1.size(), 2, "Elements are:" + results1.size() + " expected " + 2);
+        } catch (InterruptedException e) {
+            fail();
         }
 
-        List<String> resultsA = getResults(resultQueueA);
-        List<String> resultsB = getResults(resultQueueB);
+        try {
+            List<String> results2 = getResults(resultQueueB, 2, flushSeconds, TimeUnit.SECONDS);
+            assertEquals(results2.size(), 2, "Elements are:" + results2.size() + " expected " + 2);
+        } catch (InterruptedException e) {
+            fail();
+        }
 
-        assertTrue(resultsA.size() == 2, "Elements are:"+resultsA.size()+" expected "+2);
-        assertTrue(resultsB.size() == 2, "Elements are:"+resultsB.size()+" expected "+2);
 
     }
 

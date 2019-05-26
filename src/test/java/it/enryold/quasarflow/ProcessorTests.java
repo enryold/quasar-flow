@@ -13,8 +13,7 @@ import java.util.List;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ProcessorTests extends TestUtils {
 
@@ -50,14 +49,16 @@ public class ProcessorTests extends TestUtils {
                 .consume(resultQueue::put)
                 .start();
 
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
 
-        while (resultDeadline > System.currentTimeMillis()){
+
+        List<String> results = null;
+        try {
+            results = getResults(resultQueue, elements, flushSeconds, TimeUnit.SECONDS);
+            assertEquals(results.size(), elements, "Elements are:" + results.size() + " expected " + elements);
+        } catch (InterruptedException e) {
+            fail();
         }
 
-        List<String> results = getResults(resultQueue);
-
-        assertEquals(results.size(), elements, "Elements are:" + results.size() + " expected " + elements);
 
     }
 
@@ -84,15 +85,12 @@ public class ProcessorTests extends TestUtils {
                 .consume(resultQueue::put)
                 .start();
 
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
-
-        while (resultDeadline > System.currentTimeMillis()){
+        try {
+            List<Integer> results = getResults(resultQueue, elements, flushSeconds, TimeUnit.SECONDS);
+            assertEquals(results.size(), elements, "Elements are:" + results.size() + " expected " + elements);
+        } catch (InterruptedException e) {
+            fail();
         }
-
-        List<Integer> results = getResults(resultQueue);
-
-        assertEquals(results.size(), elements, "Elements are:" + results.size() + " expected " + elements);
-
     }
 
 
@@ -118,15 +116,15 @@ public class ProcessorTests extends TestUtils {
                 .consume(resultQueue::put)
                 .start();
 
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
 
-        while (resultDeadline > System.currentTimeMillis()){
+
+        List<String> results = null;
+        try {
+            results = getResults(resultQueue, elements, flushSeconds, TimeUnit.SECONDS);
+            assertEquals(results.size(), elements, "Elements are:" + results.size() + " expected " + elements);
+        } catch (InterruptedException e) {
+            fail();
         }
-
-        List<String> results = getResults(resultQueue);
-
-        assertEquals(results.size(), elements, "Elements are:" + results.size() + " expected " + elements);
-
     }
 
 
@@ -152,15 +150,13 @@ public class ProcessorTests extends TestUtils {
                 .consume(resultQueue::put)
                 .start();
 
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
 
-        while (resultDeadline > System.currentTimeMillis()){
+        try {
+            List<Integer> results = getResults(resultQueue, elements, flushSeconds, TimeUnit.SECONDS);
+            assertEquals(results.size(), elements, "Elements are:" + results.size() + " expected " + elements);
+        } catch (InterruptedException e) {
+            fail();
         }
-
-        List<Integer> results = getResults(resultQueue);
-
-        assertEquals(results.size(), elements, "Elements are:" + results.size() + " expected " + elements);
-
     }
 
 
@@ -191,19 +187,18 @@ public class ProcessorTests extends TestUtils {
                 .consume(resultQueue::put)
                 .start();
 
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
 
-
-
-        while (resultDeadline > System.currentTimeMillis()){
+        List<List<String>> results;
+        try {
+            results = getResults(resultQueue, 2, flushSeconds+1, TimeUnit.SECONDS);
+            assertEquals(results.size(), 2, "Elements are:" + results.size() + " expected " + 2);
+            assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == batchSize), "Sublist have different size as expected");
+            assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == (elements-batchSize)), "Sublist have different size as expected");
+        } catch (InterruptedException e) {
+            fail();
         }
 
 
-        List<List<String>> results = getResults(resultQueue);
-
-        assertEquals(2, results.size(), "Elements are:" + results.size() + " expected " + 2);
-        assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == batchSize), "Sublist have different size as expected");
-        assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == (elements-batchSize)), "Sublist have different size as expected");
 
     }
 
@@ -236,18 +231,17 @@ public class ProcessorTests extends TestUtils {
                 .consume(resultQueue::put)
                 .start();
 
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
 
-        while (resultDeadline > System.currentTimeMillis()){
+        List<List<String>> results;
+        try {
+            results = getResults(resultQueue, 2, flushSeconds+1, TimeUnit.SECONDS);
+            assertEquals(results.size(), 2, "Elements are:" + results.size() + " expected " + 2);
+            assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == batchSize), "Sublist have different size as expected");
+            assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == (elements-batchSize)), "Sublist have different size as expected");
+        } catch (InterruptedException e) {
+            fail();
         }
 
-
-        List<List<String>> results = getResults(resultQueue);
-
-        // EXPECT 4 ELEMENTS IN
-        assertEquals(2, results.size(), "Elements are:" + results.size() + " expected " + 2);
-        assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == batchSize), "Sublist have different size as expected");
-        assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == (elements-batchSize)), "Sublist have different size as expected");
 
     }
 
@@ -284,17 +278,17 @@ public class ProcessorTests extends TestUtils {
                 .consume(resultQueue::put)
                 .start();
 
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
 
-
-        while (resultDeadline > System.currentTimeMillis()){
+        List<List<String>> results;
+        try {
+            results = getResults(resultQueue, 2, flushSeconds+1, TimeUnit.SECONDS);
+            assertEquals(results.size(), 2, "Elements are:" + results.size() + " expected " + 2);
+            assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == 10), "Sublist have different size as expected");
+            assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == 9), "Sublist have different size as expected");
+        } catch (InterruptedException e) {
+            fail();
         }
 
-
-        List<List<String>> results = getResults(resultQueue);
-        assertEquals(2, results.size(), "Elements are:" + results.size() + " expected " + 2);
-        assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == 10), "Sublist have different size as expected");
-        assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == 9), "Sublist have different size as expected");
     }
 
 
@@ -327,20 +321,21 @@ public class ProcessorTests extends TestUtils {
                 .consume(resultQueue::put)
                 .start();
 
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
 
-        while (resultDeadline > System.currentTimeMillis()){
+        List<List<String>> results;
+        try {
+            results = getResults(resultQueue, 3, flushSeconds+1, TimeUnit.SECONDS);
+            // EXPECT 4 ELEMENTS IN
+            assertEquals(3, results.size(), "Elements are:" + results.size() + " expected " + 3);
+            assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == 20), "Sublist have different size as expected");
+            assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == 20), "Sublist have different size as expected");
+            assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == 1), "Sublist have different size as expected");
+        } catch (InterruptedException e) {
+            fail();
         }
 
 
-        List<List<String>> results = getResults(resultQueue);
 
-
-        // EXPECT 4 ELEMENTS IN
-        assertEquals(3, results.size(), "Elements are:" + results.size() + " expected " + 3);
-        assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == 20), "Sublist have different size as expected");
-        assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == 20), "Sublist have different size as expected");
-        assertTrue(results.stream().mapToInt(List::size).anyMatch(s -> s == 1), "Sublist have different size as expected");
 
     }
 
@@ -369,14 +364,15 @@ public class ProcessorTests extends TestUtils {
                 .cycle(emitter -> emitter.addConsumer().consume(resultQueue::put))
                 .start();
 
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
 
-        while (resultDeadline > System.currentTimeMillis()){
+        try {
+            List<String> results = getResults(resultQueue, 19, flushSeconds, TimeUnit.SECONDS);
+            // EXPECT 4 ELEMENTS IN
+            assertEquals(results.size(), elements, "Elements are:" + results.size() + " expected " + elements);
+
+        } catch (InterruptedException e) {
+            fail();
         }
-
-        List<String> results = getResults(resultQueue);
-
-        assertEquals(results.size(), elements, "Elements are:" + results.size() + " expected " + elements);
 
     }
 
@@ -402,14 +398,17 @@ public class ProcessorTests extends TestUtils {
                 .cycle(emitter -> emitter.addConsumer().consume(resultQueue::put))
                 .start();
 
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
 
-        while (resultDeadline > System.currentTimeMillis()){
+        List<Integer> results;
+        try {
+            results = getResults(resultQueue, 19, flushSeconds, TimeUnit.SECONDS);
+            // EXPECT 4 ELEMENTS IN
+            assertEquals(results.size(), elements, "Elements are:" + results.size() + " expected " + elements);
+
+        } catch (InterruptedException e) {
+            fail();
         }
 
-        List<Integer> results = getResults(resultQueue);
-
-        assertEquals(results.size(), elements, "Elements are:" + results.size() + " expected " + elements);
 
     }
 
@@ -442,20 +441,16 @@ public class ProcessorTests extends TestUtils {
                 .start();
 
 
-        long resultMaxArrivalTime = System.currentTimeMillis()+((flushSeconds)*1000);
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
+        List<FlushedObject<List<String>>> results;
+        try {
+            results = getResults(resultQueue, 2, flushSeconds+1, TimeUnit.SECONDS);
+            assertEquals(2, results.size(), "Elements are:" + results.size() + " expected " + 2);
+            assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == batchSize), "Sublist have different size as expected");
+            assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == (elements-batchSize)), "Sublist have different size as expected");
 
-
-
-        while (resultDeadline > System.currentTimeMillis()){
+        } catch (InterruptedException e) {
+            fail();
         }
-
-
-        List<FlushedObject<List<String>>> results = getResults(resultQueue);
-
-        assertEquals(2, results.size(), "Elements are:" + results.size() + " expected " + 2);
-        assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == batchSize), "Sublist have different size as expected");
-        assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == (elements-batchSize)), "Sublist have different size as expected");
 
 
     }
@@ -490,18 +485,16 @@ public class ProcessorTests extends TestUtils {
                 .start();
 
 
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
+        List<FlushedObject<List<String>>> results;
+        try {
+            results = getResults(resultQueue, 2, flushSeconds+1, TimeUnit.SECONDS);
+            assertEquals(2, results.size(), "Elements are:" + results.size() + " expected " + 2);
+            assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == batchSize), "Sublist have different size as expected");
+            assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == (elements-batchSize)), "Sublist have different size as expected");
 
-
-        while (resultDeadline > System.currentTimeMillis()){
+        } catch (InterruptedException e) {
+            fail();
         }
-
-
-        List<FlushedObject<List<String>>> results = getResults(resultQueue);
-
-        assertEquals(2, results.size(), "Elements are:" + results.size() + " expected " + 2);
-        assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == batchSize), "Sublist have different size as expected");
-        assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == (elements-batchSize)), "Sublist have different size as expected");
 
 
     }
@@ -540,21 +533,20 @@ public class ProcessorTests extends TestUtils {
                 .start();
 
 
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
 
-
-
-
-        while (resultDeadline > System.currentTimeMillis()){
+        List<FlushedObject<List<String>>> results;
+        try {
+            results = getResults(resultQueue, 2, flushSeconds+1, TimeUnit.SECONDS);
+            assertEquals(2, results.size(), "Elements are:" + results.size() + " expected " + 2);
+            assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == 10), "Sublist have different size as expected");
+            assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == 9), "Sublist have different size as expected");
+        } catch (InterruptedException e) {
+            fail();
         }
 
 
-        List<FlushedObject<List<String>>> results = getResults(resultQueue);
 
 
-        assertEquals(2, results.size(), "Elements are:" + results.size() + " expected " + 2);
-        assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == 10), "Sublist have different size as expected");
-        assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == 9), "Sublist have different size as expected");
 
 
     }
@@ -591,19 +583,18 @@ public class ProcessorTests extends TestUtils {
                 .start();
 
 
-        long resultDeadline = System.currentTimeMillis()+((flushSeconds+1)*1000);
-
-        while (resultDeadline > System.currentTimeMillis()){
+        List<FlushedObject<List<String>>> results;
+        try {
+            results = getResults(resultQueue, 3, flushSeconds+1, TimeUnit.SECONDS);
+            assertEquals(3, results.size(), "Elements are:" + results.size() + " expected " + 3);
+            assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == 20), "Sublist have different size as expected");
+            assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == 20), "Sublist have different size as expected");
+            assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == 1), "Sublist have different size as expected");
+        } catch (InterruptedException e) {
+            fail();
         }
 
 
-
-        List<FlushedObject<List<String>>> results = getResults(resultQueue);
-
-        assertEquals(3, results.size(), "Elements are:" + results.size() + " expected " + 3);
-        assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == 20), "Sublist have different size as expected");
-        assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == 20), "Sublist have different size as expected");
-        assertTrue(results.stream().mapToInt(s -> s.getObj().size()).anyMatch(s -> s == 1), "Sublist have different size as expected");
 
 
     }
