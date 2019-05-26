@@ -5,7 +5,7 @@ jdk:
   - oraclejdk8
 
 script:
-  - ./gradlew build --stacktrace
+  - ./gradlew build --scan s
   - cat /home/travis/build/enryold/quasar-flow/build/reports/tests/test/index.html
 
 before_cache:
