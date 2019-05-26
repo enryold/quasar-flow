@@ -11,7 +11,7 @@ sourceCompatibility = 1.8
 
 test {
     useJUnitPlatform()
-    maxHeapSize = "2048m"
+    maxHeapSize = "2800m"
     jvmArgs '-javaagent:'+file('.')+"/quasar-core-0.7.10.jar"
 }
 
