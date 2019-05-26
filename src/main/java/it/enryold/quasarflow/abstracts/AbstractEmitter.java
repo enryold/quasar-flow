@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractEmitter<T> implements IEmitter<T> {
 
-    private int emitterTaskChannelBuffer = 1_000_000;
+    private int emitterTaskChannelBuffer = 1_000;
     private Channels.OverflowPolicy emitterTaskChannelOverflowPolicy = Channels.OverflowPolicy.BLOCK;
-    private int broadcasterChannelBuffer = 1_000_000;
+    private int broadcasterChannelBuffer = 1_000;
     private Channels.OverflowPolicy broadcasterChannelOverflowPolicy = Channels.OverflowPolicy.BLOCK;
     protected Channel<T> emitterTaskChannel;
     private Fiber emitterTaskStrand;

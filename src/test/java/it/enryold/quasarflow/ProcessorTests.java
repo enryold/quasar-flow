@@ -22,6 +22,9 @@ public class ProcessorTests extends TestUtils {
 
     @AfterEach
     public void afterEach(){
+
+        this.printRuntime();
+
         if(currentFlow != null){
             currentFlow.destroy();
         }

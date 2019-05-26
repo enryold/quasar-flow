@@ -5,6 +5,7 @@ import co.paralleluniverse.fibers.SuspendExecution;
 import co.paralleluniverse.strands.channels.Channel;
 import it.enryold.quasarflow.interfaces.IEmitterTask;
 import it.enryold.quasarflow.interfaces.IFlow;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,8 +20,8 @@ public class EmitterTests extends TestUtils {
 
     private IFlow currentFlow;
 
-    @BeforeEach
-    public void beforeEach(){
+    @AfterEach
+    public void afterEach(){
         if(currentFlow != null){
             currentFlow.destroy();
         }

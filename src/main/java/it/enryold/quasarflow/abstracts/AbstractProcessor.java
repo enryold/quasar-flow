@@ -36,9 +36,9 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
 
 
 
-    private int subscribersBuffer = 1_000_000;
-    private int processorsBuffer = 1_000_000;
-    private int dispatcherBuffer = 1_000_000;
+    private int subscribersBuffer = 1_000;
+    private int processorsBuffer = 1_000;
+    private int dispatcherBuffer = 1_000;
     private Channels.OverflowPolicy subscriberOverflowPolicy = Channels.OverflowPolicy.BLOCK;
     private Channels.OverflowPolicy processorOverflowPolicy = Channels.OverflowPolicy.BLOCK;
     private Channels.OverflowPolicy dispatcherOverflowPolicy = Channels.OverflowPolicy.BLOCK;
