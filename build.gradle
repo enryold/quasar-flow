@@ -15,6 +15,14 @@ test {
 }
 
 
+
+buildScan {
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
+}
+
+
+
 repositories {
     mavenCentral()
     maven { url "http://repo.opensourceagility.com/release" }
