@@ -1,6 +1,6 @@
 # quasar-flow 
 ## Handle data flows using quasar fibers and reactive-streams.
-&nbsp;[![Build Status](https://travis-ci.org/fulmicotone/com.fulmicotone.qio.svg?branch=master)](https://travis-ci.org/fulmicotone/com.fulmicotone.qio) &nbsp;[![](https://jitpack.io/v/fulmicotone/com.fulmicotone.qio.svg)](https://jitpack.io/#fulmicotone/com.fulmicotone.qio)
+&nbsp;[![Build Status](https://travis-ci.org/enryold/it.enryold.quasarflow.svg?branch=master)](https://travis-ci.org/enryold/it.enryold.quasarflow) &nbsp;[![](https://jitpack.io/v/enryold/it.enryold.quasarflow.svg)](https://jitpack.io/#enryold/it.enryold.quasarflow)
 
 
 ### Goal - Build a concurrency system that
