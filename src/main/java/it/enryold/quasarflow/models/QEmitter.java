@@ -1,7 +1,6 @@
 package it.enryold.quasarflow.models;
 
 import it.enryold.quasarflow.abstracts.AbstractEmitter;
-import com.fulmicotone.cio.interfaces.*;
 import it.enryold.quasarflow.interfaces.*;
 
 

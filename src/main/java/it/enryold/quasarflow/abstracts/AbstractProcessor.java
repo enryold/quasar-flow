@@ -13,7 +13,7 @@ import co.paralleluniverse.strands.channels.reactivestreams.ReactiveStreams;
 import it.enryold.quasarflow.models.QEmitter;
 import it.enryold.quasarflow.components.IAccumulator;
 import it.enryold.quasarflow.components.IAccumulatorFactory;
-import com.fulmicotone.cio.interfaces.*;
+import it.enryold.quasarflow.interfaces.*;
 import it.enryold.quasarflow.models.QEmitterList;
 import it.enryold.quasarflow.interfaces.*;
 import org.reactivestreams.Processor;
