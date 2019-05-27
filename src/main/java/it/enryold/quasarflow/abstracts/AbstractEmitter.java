@@ -54,7 +54,7 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     {
         this.task = task;
         emitterTaskChannel = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
-        emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> task.emit(emitterTaskChannel));
+        emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> { if(task != null){ task.emit(emitterTaskChannel); } });
         emitterTaskPublisher = ReactiveStreams.toPublisher(emitterTaskChannel);
         return (E)this;
     }
@@ -64,7 +64,7 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
         this.task = task;
         this.extractorFunction = extractor;
         emitterTaskChannel = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
-        emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> task.emit(emitterTaskChannel));
+        emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> { if(task != null){ task.emit(emitterTaskChannel); } });
         emitterTaskPublisher = ReactiveStreams.toPublisher(emitterTaskChannel);
         return (E)this;
     }
@@ -79,7 +79,6 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
             buildRouted();
         }
 
-        System.out.println("Start EMITTER "+name+" publisher strand "+emitterTaskStrand.getName());
         dispatcher.start();
         emitterTaskStrand.start();
     }

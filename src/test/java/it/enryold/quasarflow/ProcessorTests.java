@@ -7,6 +7,7 @@ import it.enryold.quasarflow.interfaces.IFlow;
 import it.enryold.quasarflow.models.FlushedObject;
 import it.enryold.quasarflow.models.QSettings;
 import it.enryold.quasarflow.models.StringAccumulator;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,10 +27,12 @@ public class ProcessorTests extends TestUtils {
 
         this.printRuntime();
 
+
         if(currentFlow != null){
             currentFlow.destroy();
         }
     }
+
 
     @Test
     public void testSingleProcessor() {

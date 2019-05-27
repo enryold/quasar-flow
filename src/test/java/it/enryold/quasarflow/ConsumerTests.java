@@ -6,6 +6,7 @@ import it.enryold.quasarflow.interfaces.IEmitterTask;
 import it.enryold.quasarflow.interfaces.IFlow;
 import it.enryold.quasarflow.models.QSettings;
 import it.enryold.quasarflow.models.StringAccumulator;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,13 +23,15 @@ public class ConsumerTests extends TestUtils {
 
     @AfterEach
     public void afterEach(){
-
         this.printRuntime();
+
 
         if(currentFlow != null){
             currentFlow.destroy();
         }
     }
+
+
 
     @Test
     public void testSingleConsumer() {

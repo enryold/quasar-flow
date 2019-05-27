@@ -61,16 +61,10 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
 
     @Override
     public void start() {
-        subscriberStrands.forEach(f -> {
-            System.out.println("Start RECEIVER "+name+" subscriber strand "+f.getName());
-            f.start();
-        });
+        subscriberStrands.forEach(Fiber::start);
 
         if(dispatcherStrand != null){
-            System.out.println("Start RECEIVER "+name+" dispatcher strand "+dispatcherStrand.getName());
             dispatcherStrand.start();
-        }else{
-            System.out.println("Start RECEIVER "+name);
         }
     }
 

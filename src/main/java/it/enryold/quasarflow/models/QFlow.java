@@ -36,7 +36,6 @@ public class QFlow implements IFlow {
 
         for(int i = startables.size()-1; i >= 0; i--){
             IFlowable s = startables.get(i);
-            System.out.println("FLOW: "+s.toString());
             s.start();
         }
 

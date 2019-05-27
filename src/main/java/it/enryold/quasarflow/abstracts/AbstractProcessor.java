@@ -67,16 +67,11 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
 
     @Override
     public void start() {
-        subscriberStrands.forEach(f -> {
-            System.out.println("Start SUBSCRIBER "+name+" subscriber strand "+f.getName());
-            f.start();
-        });
+        subscriberStrands.forEach(Fiber::start);
 
         if(dispatcherStrand != null){
-            System.out.println("Start SUBSCRIBER "+name+" dispatcher strand "+dispatcherStrand.getName());
             dispatcherStrand.start();
         }else{
-            System.out.println("Start SUBSCRIBER "+name);
         }
 
     }
