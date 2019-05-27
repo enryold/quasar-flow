@@ -17,9 +17,21 @@ public class QEmitter<T> extends AbstractEmitter<T> {
     }
 
 
+
+
     @Override
     public <S extends IProcessor<T>> S addProcessor() {
         return  (S)new QProcessor<>(flow, this);
+    }
+
+
+    public <S extends IProcessor<T>> S useProcessor(IFlowInjector<S> flowInjector) {
+        return flowInjector.inject(flow);
+    }
+
+    public <S extends IProcessor<T>> IEmitter<T> useProcessor(IFlowInjector<S> flowInjector, Injector<S> processor) {
+        processor.accept(flowInjector.inject(flow));
+        return this;
     }
 
     @Override
