@@ -5,6 +5,7 @@
 //import co.paralleluniverse.strands.channels.Channel;
 //import it.enryold.quasarflow.interfaces.IEmitterTask;
 //import it.enryold.quasarflow.interfaces.IFlow;
+//import it.enryold.quasarflow.models.QSettings;
 //import org.junit.jupiter.api.AfterEach;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Test;
@@ -42,7 +43,7 @@
 //        LinkedTransferQueue<String> resultQueue = resultQueue();
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                .broadcastEmitter(stringEmitter)
 //                .addConsumer()
 //                .consume(resultQueue::put)
@@ -76,7 +77,7 @@
 //        LinkedTransferQueue<String> resultQueue2 = resultQueue();
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                .broadcastEmitter(stringEmitter)
 //                .addProcessor(p -> p.process().addConsumer(c -> c.consume(resultQueue1::put)))
 //                .addProcessor(p -> p.process().addConsumer(c -> c.consume(resultQueue2::put)))
@@ -127,7 +128,7 @@
 //        LinkedTransferQueue<String> resultQueueB = resultQueue();
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                // TAKE AS ROUTING KEY THE FIRST CHAR IN A STRING
 //                .routedEmitter(stringEmitter, o -> Optional.of(o.substring(0, 1)))
 //                .addProcessor("A", p -> p.process().addConsumer(c -> c.consume(resultQueueA::put)))

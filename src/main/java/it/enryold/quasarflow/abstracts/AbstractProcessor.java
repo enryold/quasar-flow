@@ -16,6 +16,7 @@ import it.enryold.quasarflow.components.IAccumulatorFactory;
 import it.enryold.quasarflow.interfaces.*;
 import it.enryold.quasarflow.models.QEmitterList;
 import it.enryold.quasarflow.interfaces.*;
+import it.enryold.quasarflow.models.QSettings;
 import org.reactivestreams.Processor;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -35,19 +36,12 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
 
-
-    private int subscribersBuffer = 1_000;
-    private int processorsBuffer = 1_000;
-    private int dispatcherBuffer = 1_000;
-    private Channels.OverflowPolicy subscriberOverflowPolicy = Channels.OverflowPolicy.BLOCK;
-    private Channels.OverflowPolicy processorOverflowPolicy = Channels.OverflowPolicy.BLOCK;
-    private Channels.OverflowPolicy dispatcherOverflowPolicy = Channels.OverflowPolicy.BLOCK;
-
     private List<Fiber<Void>> subscriberStrands = new ArrayList<>();
     private Fiber<Void> dispatcherStrand;
     private Channel<E>[] rrChannels;
     private List<ReceivePort<E>> processorChannels = new ArrayList<>();
     private IEmitter<E> emitter;
+    private QSettings settings;
     private String name;
     private String routingKey;
     private IFlow flow;
@@ -56,6 +50,7 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
     public AbstractProcessor(IFlow flow, IEmitter<E> eEmitter, String name, String routingKey){
         this.flow = flow;
         this.emitter = eEmitter;
+        this.settings = flow.getSettings();
         this.name = name == null ? String.valueOf(this.hashCode()) : name;
         this.routingKey = routingKey;
         flow.addStartable(this);
@@ -66,42 +61,17 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
     }
 
     public AbstractProcessor(IFlow flow, IEmitter<E> eEmitter){
-        this(flow, eEmitter, null, "BROADCAST");
+        this(flow, eEmitter, "BROADCAST");
     }
 
-
-    public <I extends IProcessor<E>> I withSubscriberBuffer(int buffer){
-        this.subscribersBuffer = buffer;
-        return (I)this;
-    }
-
-    public <I extends IProcessor<E>> I withSubscriberOverflowPolicy(Channels.OverflowPolicy overflowPolicy){
-        this.subscriberOverflowPolicy = overflowPolicy;
-        return (I)this;
-    }
-
-    public <I extends IProcessor<E>> I withProcessorsBuffer(int buffer){
-        this.processorsBuffer = buffer;
-        return (I)this;
-    }
-
-    public <I extends IProcessor<E>> I withProcessorOverflowPolicy(Channels.OverflowPolicy overflowPolicy){
-        this.processorOverflowPolicy = overflowPolicy;
-        return (I)this;
-    }
 
     @Override
     public void start() {
-        subscriberStrands.forEach(f -> {
-            System.out.println("Start SUBSCRIBER "+name+" subscriber strand "+f.getName());
-            f.start();
-        });
+        subscriberStrands.forEach(Fiber::start);
 
         if(dispatcherStrand != null){
-            System.out.println("Start SUBSCRIBER "+name+" dispatcher strand "+dispatcherStrand.getName());
             dispatcherStrand.start();
         }else{
-            System.out.println("Start SUBSCRIBER "+name);
         }
 
     }
@@ -117,7 +87,7 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
 
     private <T>ReceivePort<T> buildProcessor(Publisher<E> publisher, ITransform<E, T> transform)
     {
-        Processor<E, T> processor = ReactiveStreams.toProcessor(processorsBuffer, processorOverflowPolicy, (SuspendableAction2<ReceivePort<E>, SendPort<T>>) (in, out) -> {
+        Processor<E, T> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<T>>) (in, out) -> {
             for (; ; ) {
                 E x = in.receive();
                 if (x == null)
@@ -129,13 +99,13 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
             }
         });
         publisher.subscribe(processor);
-        return ReactiveStreams.subscribe(subscribersBuffer, subscriberOverflowPolicy, processor);
+        return ReactiveStreams.subscribe(settings.getBufferSize(), settings.getOverflowPolicy(), processor);
     }
 
 
     private ReceivePort<E> buildProcessor(Publisher<E> publisher)
     {
-        final Processor<E, E> processor = ReactiveStreams.toProcessor(processorsBuffer, processorOverflowPolicy, (SuspendableAction2<ReceivePort<E>, SendPort<E>>) (in, out) -> {
+        final Processor<E, E> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<E>>) (in, out) -> {
             for (; ; ) {
                 E x = in.receive();
                 if (x == null)
@@ -144,7 +114,7 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
             }
         });
         publisher.subscribe(processor);
-        return ReactiveStreams.subscribe(subscribersBuffer, subscriberOverflowPolicy, processor);
+        return ReactiveStreams.subscribe(settings.getBufferSize(), settings.getOverflowPolicy(), processor);
     }
 
 
@@ -153,7 +123,7 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
                                                                 int flushTimeout,
                                                                 TimeUnit flushTimeUnit)
     {
-        final Processor<E, List<E>> processor = ReactiveStreams.toProcessor(processorsBuffer, processorOverflowPolicy, (SuspendableAction2<ReceivePort<E>, SendPort<List<E>>>) (in, out) -> {
+        final Processor<E, List<E>> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<List<E>>>) (in, out) -> {
             List<E> collection = new ArrayList<>();
 
             for(;;){
@@ -186,7 +156,7 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
 
         });
         publisher.subscribe(processor);
-        return ReactiveStreams.subscribe(subscribersBuffer, subscriberOverflowPolicy, processor);
+        return ReactiveStreams.subscribe(settings.getBufferSize(), settings.getOverflowPolicy(), processor);
     }
 
 
@@ -196,7 +166,7 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
                                                                    int flushTimeout,
                                                                    TimeUnit flushTimeUnit)
     {
-        final Processor<E, List<T>> processor = ReactiveStreams.toProcessor(processorsBuffer, processorOverflowPolicy, (SuspendableAction2<ReceivePort<E>, SendPort<List<T>>>) (in, out) -> {
+        final Processor<E, List<T>> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<List<T>>>) (in, out) -> {
 
             IAccumulator<E, T> accumulator = accumulatorFactory.build();
 
@@ -236,7 +206,7 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
 
         });
         publisher.subscribe(processor);
-        return ReactiveStreams.subscribe(subscribersBuffer, subscriberOverflowPolicy, processor);
+        return ReactiveStreams.subscribe(settings.getBufferSize(), settings.getOverflowPolicy(), processor);
 
     }
 
@@ -246,11 +216,11 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
         this.emitter = emitter;
 
         rrChannels = IntStream.range(0, workers)
-                .mapToObj(i -> Channels.<E>newChannel(dispatcherBuffer, dispatcherOverflowPolicy))
+                .mapToObj(i -> Channels.<E>newChannel(settings.getBufferSize(), settings.getOverflowPolicy()))
                 .toArray((IntFunction<Channel<E>[]>) Channel[]::new);
 
 
-        final ReceivePort<E> roundRobinSubscriberChannel = ReactiveStreams.subscribe(subscribersBuffer, subscriberOverflowPolicy, this.emitter.getPublisher(routingKey));
+        final ReceivePort<E> roundRobinSubscriberChannel = ReactiveStreams.subscribe(settings.getBufferSize(), settings.getOverflowPolicy(), this.emitter.getPublisher(routingKey));
         dispatcherStrand = new Fiber<>((SuspendableRunnable) () -> {
 
             int index = 0;
@@ -303,7 +273,7 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
     private <I>IEmitter<I> buildFanInEmitter(List<ReceivePort<I>> channels)
     {
 
-        Channel<I> fanInChannel = Channels.newChannel(processorsBuffer, processorOverflowPolicy);
+        Channel<I> fanInChannel = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
         channels.stream()
                 .map(ch -> subscribeFiber(fanInChannel, ch))
                 .forEach(subscriberStrands::add);

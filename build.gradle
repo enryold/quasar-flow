@@ -1,6 +1,6 @@
 group 'it.enryold'
 
-version '0.0.1'
+version '0.0.2'
 
 apply plugin: 'java'
 apply plugin: 'idea'
@@ -16,11 +16,12 @@ test {
 
 
 
-buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
+if (hasProperty('buildScan')) {
+    buildScan {
+        termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+        termsOfServiceAgree = 'yes'
+    }
 }
-
 
 
 repositories {

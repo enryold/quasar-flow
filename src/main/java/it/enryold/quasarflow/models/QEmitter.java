@@ -7,18 +7,31 @@ import it.enryold.quasarflow.interfaces.*;
 public class QEmitter<T> extends AbstractEmitter<T> {
 
 
-    public QEmitter(IFlow flow) {
-        super(flow);
-    }
 
     public QEmitter(IFlow flow, String name) {
         super(flow, name);
     }
 
+    public QEmitter(IFlow flow) {
+        super(flow, null);
+    }
+
+
+
 
     @Override
     public <S extends IProcessor<T>> S addProcessor() {
         return  (S)new QProcessor<>(flow, this);
+    }
+
+
+    public <S extends IProcessor<T>> S useProcessor(IFlowInjector<S> flowInjector) {
+        return flowInjector.inject(flow);
+    }
+
+    public <S extends IProcessor<T>> IEmitter<T> useProcessor(IFlowInjector<S> flowInjector, Injector<S> processor) {
+        processor.accept(flowInjector.inject(flow));
+        return this;
     }
 
     @Override

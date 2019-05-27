@@ -5,7 +5,9 @@
 //import it.enryold.quasarflow.interfaces.IEmitterTask;
 //import it.enryold.quasarflow.interfaces.IFlow;
 //import it.enryold.quasarflow.models.FlushedObject;
+//import it.enryold.quasarflow.models.QSettings;
 //import it.enryold.quasarflow.models.StringAccumulator;
+//import org.junit.jupiter.api.AfterAll;
 //import org.junit.jupiter.api.AfterEach;
 //import org.junit.jupiter.api.Test;
 //
@@ -25,10 +27,12 @@
 //
 //        this.printRuntime();
 //
+//
 //        if(currentFlow != null){
 //            currentFlow.destroy();
 //        }
 //    }
+//
 //
 //    @Test
 //    public void testSingleProcessor() {
@@ -44,7 +48,7 @@
 //        LinkedTransferQueue<String> resultQueue = resultQueue();
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                .broadcastEmitter(stringEmitter)
 //                .addProcessor()
 //                .process()
@@ -80,7 +84,7 @@
 //        LinkedTransferQueue<Integer> resultQueue = resultQueue();
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                .broadcastEmitter(stringEmitter)
 //                .addProcessor()
 //                .process(String::length)
@@ -111,7 +115,7 @@
 //        LinkedTransferQueue<String> resultQueue = resultQueue();
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                .broadcastEmitter(stringEmitter)
 //                .addProcessor()
 //                .processWithFanIn(2)
@@ -145,7 +149,7 @@
 //        LinkedTransferQueue<Integer> resultQueue = resultQueue();
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                .broadcastEmitter(stringEmitter)
 //                .addProcessor()
 //                .processWithFanIn(2, String::length)
@@ -182,7 +186,7 @@
 //
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                .broadcastEmitter(stringEmitter)
 //                .addProcessor()
 //                .processWithFanInAndSizeBatching(workers, batchSize, flushSeconds, timeUnit)
@@ -226,7 +230,7 @@
 //
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                .broadcastEmitter(stringEmitter)
 //                .addProcessor()
 //                .processWithFanInAndSizeBatching(workers, batchSize, flushSeconds, timeUnit)
@@ -273,7 +277,7 @@
 //        IAccumulatorFactory<String, String> stringAccumulatorFactory = () -> new StringAccumulator(byteSizeLimit);
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                .broadcastEmitter(stringEmitter)
 //                .addProcessor()
 //                .processWithFanInAndByteBatching(workers, stringAccumulatorFactory, flushSeconds, timeUnit)
@@ -316,7 +320,7 @@
 //        IAccumulatorFactory<String, String> stringAccumulatorFactory = () -> new StringAccumulator(byteSizeLimit);
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                .broadcastEmitter(stringEmitter)
 //                .addProcessor()
 //                .processWithFanInAndByteBatching(workers, stringAccumulatorFactory, flushSeconds, timeUnit)
@@ -360,7 +364,7 @@
 //        LinkedTransferQueue<String> resultQueue = resultQueue();
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                .broadcastEmitter(stringEmitter)
 //                .addProcessor()
 //                .processWithFanOut(2)
@@ -394,7 +398,7 @@
 //        LinkedTransferQueue<Integer> resultQueue = resultQueue();
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                .broadcastEmitter(stringEmitter)
 //                .addProcessor()
 //                .processWithFanOut(2, String::length)
@@ -434,7 +438,7 @@
 //        LinkedTransferQueue<FlushedObject<List<String>>> resultQueue = resultQueue();
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                .broadcastEmitter(stringEmitter)
 //                .addProcessor()
 //                .processWithFanOutAndSizeBatching(workers, batchSize, flushSeconds, timeUnit)
@@ -478,7 +482,7 @@
 //
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                .broadcastEmitter(stringEmitter)
 //                .addProcessor()
 //                .processWithFanOutAndSizeBatching(workers, batchSize, flushSeconds, timeUnit)
@@ -526,7 +530,7 @@
 //        IAccumulatorFactory<String, String> stringAccumulatorFactory = () -> new StringAccumulator(byteSizeLimit);
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                .broadcastEmitter(stringEmitter)
 //                .addProcessor()
 //                .processWithFanOutAndByteBatching(workers, stringAccumulatorFactory, flushSeconds, timeUnit)
@@ -576,7 +580,7 @@
 //        IAccumulatorFactory<String, String> stringAccumulatorFactory = () -> new StringAccumulator(byteSizeLimit);
 //
 //
-//        currentFlow = QuasarFlow.newFlow()
+//        currentFlow = QuasarFlow.newFlow(QSettings.test())
 //                .broadcastEmitter(stringEmitter)
 //                .addProcessor()
 //                .processWithFanOutAndByteBatching(workers, stringAccumulatorFactory, flushSeconds, timeUnit)

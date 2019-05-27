@@ -12,6 +12,6 @@ public class QConsumer<T> extends AbstractConsumer<T> {
     }
 
     public QConsumer(IFlow flow, IEmitter<T> tEmitter) {
-        super(flow, tEmitter);
+        super(flow, tEmitter, null);
     }
 }
