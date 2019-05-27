@@ -13,7 +13,7 @@ import co.paralleluniverse.strands.channels.reactivestreams.ReactiveStreams;
 import it.enryold.quasarflow.models.QEmitter;
 import it.enryold.quasarflow.components.IAccumulator;
 import it.enryold.quasarflow.components.IAccumulatorFactory;
-import com.fulmicotone.cio.interfaces.*;
+import it.enryold.quasarflow.interfaces.*;
 import it.enryold.quasarflow.models.QEmitterList;
 import it.enryold.quasarflow.interfaces.*;
 import org.reactivestreams.Processor;
@@ -36,9 +36,9 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
 
 
 
-    private int subscribersBuffer = 1_000_000;
-    private int processorsBuffer = 1_000_000;
-    private int dispatcherBuffer = 1_000_000;
+    private int subscribersBuffer = 1_000;
+    private int processorsBuffer = 1_000;
+    private int dispatcherBuffer = 1_000;
     private Channels.OverflowPolicy subscriberOverflowPolicy = Channels.OverflowPolicy.BLOCK;
     private Channels.OverflowPolicy processorOverflowPolicy = Channels.OverflowPolicy.BLOCK;
     private Channels.OverflowPolicy dispatcherOverflowPolicy = Channels.OverflowPolicy.BLOCK;

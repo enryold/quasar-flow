@@ -1,6 +1,6 @@
 # quasar-flow 
 ## Handle data flows using quasar fibers and reactive-streams.
-&nbsp;[![Build Status](https://travis-ci.org/enryold/it.enryold.quasarflow.svg?branch=master)](https://travis-ci.org/enryold/it.enryold.quasarflow) &nbsp;[![](https://jitpack.io/v/enryold/it.enryold.quasarflow.svg)](https://jitpack.io/#enryold/it.enryold.quasarflow)
+&nbsp;[![Build Status](https://travis-ci.org/enryold/quasar-flow.svg?branch=develop)](https://travis-ci.org/enryold/it.enryold.quasarflow) &nbsp;[![](https://jitpack.io/v/enryold/quasar-flow.svg)](https://jitpack.io/#enryold/quasar-flow)
 
 
 ### Goal - Build a concurrency system that

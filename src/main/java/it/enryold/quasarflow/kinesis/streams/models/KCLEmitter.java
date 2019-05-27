@@ -5,7 +5,7 @@ import com.amazonaws.services.kinesis.model.Record;
 import it.enryold.quasarflow.models.QConsumer;
 import it.enryold.quasarflow.models.QProcessor;
 import it.enryold.quasarflow.abstracts.AbstractEmitter;
-import com.fulmicotone.cio.interfaces.*;
+import it.enryold.quasarflow.interfaces.*;
 import it.enryold.quasarflow.interfaces.*;
 
 public class KCLEmitter extends AbstractEmitter<Record> {
