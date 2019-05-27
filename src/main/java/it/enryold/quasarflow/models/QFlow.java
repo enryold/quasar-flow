@@ -13,7 +13,7 @@ public class QFlow implements IFlow {
     private QSettings settings;
 
     public QFlow(){
-        this.settings = QSettings.standard();
+        this.settings = QSettings.highLoad();
     }
 
     public QFlow(QSettings settings){
