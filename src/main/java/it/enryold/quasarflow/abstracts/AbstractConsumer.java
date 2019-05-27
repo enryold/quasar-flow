@@ -12,9 +12,11 @@ import co.paralleluniverse.strands.channels.SendPort;
 import co.paralleluniverse.strands.channels.reactivestreams.ReactiveStreams;
 import it.enryold.quasarflow.components.IAccumulator;
 import it.enryold.quasarflow.components.IAccumulatorFactory;
+import it.enryold.quasarflow.enums.QMetricType;
 import it.enryold.quasarflow.interfaces.*;
-import it.enryold.quasarflow.interfaces.*;
-import it.enryold.quasarflow.models.QSettings;
+import it.enryold.quasarflow.models.utils.FnBuildMetric;
+import it.enryold.quasarflow.models.utils.QMetric;
+import it.enryold.quasarflow.models.utils.QSettings;
 import org.reactivestreams.Processor;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -39,6 +41,7 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
     private Fiber<Void> dispatcherStrand;
     private IEmitter<E> emitter;
     private Channel<E>[] rrChannels;
+    private Channel<QMetric> metricChannel;
     private String name;
     private IFlow flow;
     private QSettings settings;
@@ -48,7 +51,7 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
         this.flow = flow;
         this.emitter = eEmitter;
         this.settings = flow.getSettings();
-        this.name = name == null ? String.valueOf(this.hashCode()) : name;
+        this.name = name == null ? getClass().getSimpleName()+this.hashCode() : name;
         flow.addStartable(this);
     }
 
@@ -58,7 +61,11 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
     }
 
 
-
+    @Override
+    public <I extends IFlowable<E>> I withMetricChannel(Channel<QMetric> metricChannel) {
+        this.metricChannel = metricChannel;
+        return (I)this;
+    }
     @Override
     public void start() {
         subscriberStrands.forEach(Fiber::start);
@@ -85,6 +92,10 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
                 E x = in.receive();
                 if (x == null)
                     break;
+
+                if(metricChannel != null) {
+                    metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.RECEIVED.name()));
+                }
                 out.send(x);
             }
         });
@@ -152,6 +163,9 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
                 }while(collection.size() < chunkSize);
 
                 if(collection.size() > 0){
+                    if(metricChannel != null) {
+                        metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.RECEIVED.name()));
+                    }
                     out.send(new ArrayList<>(collection));
                 }
 
@@ -201,6 +215,9 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
 
                 if(accumulator.getRecords().size() > 0){
                     out.send(new ArrayList<>(accumulator.getRecords()));
+                    if(metricChannel != null) {
+                        metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.RECEIVED.name()));
+                    }
                 }
 
                 accumulator = accumulatorFactory.build();
@@ -224,6 +241,9 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
                     if (x == null)
                         break;
 
+                    if(metricChannel != null) {
+                        metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.PRODUCED.name()));
+                    }
                     ingestionTask.ingest(x);
 
                 }

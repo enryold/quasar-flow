@@ -5,7 +5,7 @@ import it.enryold.quasarflow.components.IAccumulatorFactory;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public interface IProcessor<I> extends IFlowable {
+public interface IProcessor<I> extends IFlowable<I> {
 
 
     <EM extends IEmitter<I>> EM process();

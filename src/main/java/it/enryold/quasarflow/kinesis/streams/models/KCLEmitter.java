@@ -23,9 +23,6 @@ public class KCLEmitter extends AbstractEmitter<Record> {
     }
 
 
-    public Channel<Record> getChannel(){
-        return emitterTaskChannel;
-    }
 
     public <S extends IProcessor<Record>> S addProcessor(String partitionKey) {
         return (S)new QProcessor<>(flow, this, partitionKey);

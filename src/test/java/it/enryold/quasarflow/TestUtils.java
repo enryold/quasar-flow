@@ -20,15 +20,6 @@ public class TestUtils {
 
     protected IEmitterTask<String> stringsEmitterTask(int max)
     {
-        QuasarFlow.newFlow()
-                .broadcastEmitter(null) // BUILD A BROADCAST EMITTER FROM TASK
-                .addProcessor(p -> { // ADD A PROCESSOR
-                    p.process() // PROCESS
-                            .addConsumer(c -> // ADD A CONSUMER
-                                    c.consume(str -> System.out.println(str))); // CONSUME WITH CONSUMER TASK
-                })
-                .start();
-
         return publisherChannel -> {
             for(int i = 0; i<max; i++){ publisherChannel.send("String"+i); } };
     }

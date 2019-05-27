@@ -1,4 +1,4 @@
-package it.enryold.quasarflow.models;
+package it.enryold.quasarflow.models.utils;
 
 import co.paralleluniverse.strands.channels.Channels;
 

@@ -1,49 +1,15 @@
 package it.enryold.quasarflow.models;
 
-import it.enryold.quasarflow.interfaces.IFlow;
-import it.enryold.quasarflow.interfaces.IFlowable;
-
-import java.util.ArrayList;
-import java.util.List;
-
-
-public class QFlow implements IFlow {
-
-    private List<IFlowable> startables = new ArrayList<>();
-    private QSettings settings;
-
-    public QFlow(){
-        this.settings = QSettings.highLoad();
-    }
-
-    public QFlow(QSettings settings){
-        this.settings = settings;
-    }
+import co.paralleluniverse.strands.channels.Channel;
+import it.enryold.quasarflow.abstracts.AbstractFlow;
+import it.enryold.quasarflow.models.utils.QMetric;
+import it.enryold.quasarflow.models.utils.QSettings;
 
 
-    @Override
-    public void addStartable(IFlowable startable) {
-        startables.add(startable);
-    }
+public class QFlow extends AbstractFlow {
 
-    @Override
-    public QSettings getSettings() {
-        return settings;
-    }
-
-    @Override
-    public IFlow start() {
-
-        for(int i = startables.size()-1; i >= 0; i--){
-            IFlowable s = startables.get(i);
-            s.start();
-        }
-
-        return this;
-    }
-
-    @Override
-    public void destroy() {
-        startables.forEach(IFlowable::destroy);
+    public QFlow(){}
+    public QFlow(QSettings settings, Channel<QMetric> metricChannel){
+        super(settings, metricChannel);
     }
 }

@@ -1,7 +1,11 @@
 package it.enryold.quasarflow.interfaces;
 
-public interface IFlowable {
+import co.paralleluniverse.strands.channels.Channel;
+import it.enryold.quasarflow.models.utils.QMetric;
 
+public interface IFlowable<T> {
+
+    <I extends IFlowable<T>> I withMetricChannel(Channel<QMetric> metricChannel);
     void start();
     void destroy();
     IFlow flow();
