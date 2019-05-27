@@ -5,11 +5,11 @@ import co.paralleluniverse.fibers.SuspendExecution;
 import co.paralleluniverse.strands.SuspendableRunnable;
 import co.paralleluniverse.strands.channels.*;
 import co.paralleluniverse.strands.channels.reactivestreams.ReactiveStreams;
-import it.enryold.quasarflow.interfaces.IEmitter;
-import it.enryold.quasarflow.interfaces.IEmitterTask;
-import it.enryold.quasarflow.interfaces.IFlow;
-import it.enryold.quasarflow.interfaces.IRoutingKeyExtractor;
-import it.enryold.quasarflow.models.QSettings;
+import it.enryold.quasarflow.enums.QMetricType;
+import it.enryold.quasarflow.interfaces.*;
+import it.enryold.quasarflow.models.utils.FnBuildMetric;
+import it.enryold.quasarflow.models.utils.QMetric;
+import it.enryold.quasarflow.models.utils.QSettings;
 import org.reactivestreams.Publisher;
 
 import java.util.*;
@@ -21,6 +21,7 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     private Fiber emitterTaskStrand;
     private Publisher<T> emitterTaskPublisher;
     private Map<String, List<Channel<T>>> channels = new HashMap<>();
+    private Channel<QMetric> metricChannel;
     private IEmitterTask<T> task;
     private QSettings settings;
     private Fiber dispatcher;
@@ -36,10 +37,16 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     public AbstractEmitter(IFlow flow, String name){
         this.flow = flow;
         this.settings = flow.getSettings();
-        this.name = name == null ? String.valueOf(this.hashCode()) : name;
+        this.name = name == null ? getClass().getSimpleName()+this.hashCode() : name;
         flow.addStartable(this);
     }
 
+
+    @Override
+    public <I extends IFlowable<T>> I withMetricChannel(Channel<QMetric> metricChannel) {
+        this.metricChannel = metricChannel;
+        return (I)this;
+    }
 
     public <E extends IEmitter<T>> E broadcast(){
         return this.broadcastEmitter(task);
@@ -54,7 +61,12 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     {
         this.task = task;
         emitterTaskChannel = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
-        emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> { if(task != null){ task.emit(emitterTaskChannel); } });
+        emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> { if(task != null){
+            if(metricChannel != null){
+                metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.PRODUCED.name()));
+            }
+            task.emit(emitterTaskChannel); }
+        });
         emitterTaskPublisher = ReactiveStreams.toPublisher(emitterTaskChannel);
         return (E)this;
     }
@@ -64,11 +76,21 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
         this.task = task;
         this.extractorFunction = extractor;
         emitterTaskChannel = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
-        emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> { if(task != null){ task.emit(emitterTaskChannel); } });
+        emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> { if(task != null){
+            if(metricChannel != null){
+                metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.PRODUCED.name()));
+            }
+            task.emit(emitterTaskChannel);
+        } });
         emitterTaskPublisher = ReactiveStreams.toPublisher(emitterTaskChannel);
         return (E)this;
     }
 
+
+    @Override
+    public Channel<T> getChannel() {
+        return emitterTaskChannel;
+    }
 
     @Override
     public void start() {

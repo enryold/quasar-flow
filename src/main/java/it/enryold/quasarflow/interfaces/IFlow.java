@@ -1,11 +1,14 @@
 package it.enryold.quasarflow.interfaces;
 
-import it.enryold.quasarflow.models.QSettings;
+import it.enryold.quasarflow.models.utils.QSettings;
 
 public interface IFlow {
 
+
     void addStartable(IFlowable startable);
     QSettings getSettings();
-    IFlow start();
+    String getName();
+    <I extends IFlow> I start();
     void destroy();
+
 }

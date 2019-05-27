@@ -10,13 +10,15 @@ import co.paralleluniverse.strands.channels.Channels;
 import co.paralleluniverse.strands.channels.ReceivePort;
 import co.paralleluniverse.strands.channels.SendPort;
 import co.paralleluniverse.strands.channels.reactivestreams.ReactiveStreams;
+import it.enryold.quasarflow.enums.QMetricType;
 import it.enryold.quasarflow.models.QEmitter;
 import it.enryold.quasarflow.components.IAccumulator;
 import it.enryold.quasarflow.components.IAccumulatorFactory;
 import it.enryold.quasarflow.interfaces.*;
 import it.enryold.quasarflow.models.QEmitterList;
-import it.enryold.quasarflow.interfaces.*;
-import it.enryold.quasarflow.models.QSettings;
+import it.enryold.quasarflow.models.utils.FnBuildMetric;
+import it.enryold.quasarflow.models.utils.QMetric;
+import it.enryold.quasarflow.models.utils.QSettings;
 import org.reactivestreams.Processor;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -40,6 +42,7 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
     private Fiber<Void> dispatcherStrand;
     private Channel<E>[] rrChannels;
     private List<ReceivePort<E>> processorChannels = new ArrayList<>();
+    private Channel<QMetric> metricChannel;
     private IEmitter<E> emitter;
     private QSettings settings;
     private String name;
@@ -51,7 +54,7 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
         this.flow = flow;
         this.emitter = eEmitter;
         this.settings = flow.getSettings();
-        this.name = name == null ? String.valueOf(this.hashCode()) : name;
+        this.name = name == null ? getClass().getSimpleName()+this.hashCode() : name;
         this.routingKey = routingKey;
         flow.addStartable(this);
     }
@@ -64,6 +67,13 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
         this(flow, eEmitter, "BROADCAST");
     }
 
+
+
+    @Override
+    public <I extends IFlowable<E>> I withMetricChannel(Channel<QMetric> metricChannel) {
+        this.metricChannel = metricChannel;
+        return (I)this;
+    }
 
     @Override
     public void start() {
@@ -92,6 +102,9 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
                 E x = in.receive();
                 if (x == null)
                     break;
+                if(metricChannel != null) {
+                    metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.RECEIVED.name()));
+                }
                 T o = transform.apply(x);
                 if(o != null){
                     out.send(o);
@@ -110,6 +123,9 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
                 E x = in.receive();
                 if (x == null)
                     break;
+                if(metricChannel != null) {
+                    metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.RECEIVED.name()));
+                }
                 out.send(x);
             }
         });
@@ -147,6 +163,9 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
                 }while(collection.size() < chunkSize);
 
                 if(collection.size() > 0){
+                    if(metricChannel != null) {
+                        metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.RECEIVED.name()));
+                    }
                     out.send(new ArrayList<>(collection));
                 }
 
@@ -193,6 +212,9 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
                 while (isAccumulatorAvailable);
 
                 if(accumulator.getRecords().size() > 0){
+                    if(metricChannel != null) {
+                        metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.RECEIVED.name()));
+                    }
                     out.send(accumulator.getRecords());
                 }
 
@@ -254,6 +276,9 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
                     if (x == null)
                         break;
 
+                    if(metricChannel != null) {
+                        metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.PRODUCED.name()));
+                    }
                     publisherChannel.send(x);
 
                 }
@@ -280,7 +305,12 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
 
         return new QEmitter<I>(flow)
                 .broadcastEmitter(publisherChannel -> {
-                    for(;;){ publisherChannel.send(fanInChannel.receive()); }
+                    for(;;){
+                        if(metricChannel != null) {
+                            metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.PRODUCED.name()));
+                        }
+                        publisherChannel.send(fanInChannel.receive());
+                    }
                 });
     }
 
@@ -292,7 +322,9 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
                     I x = channel.receive();
                     if (x == null)
                         break;
-
+                    if(metricChannel != null) {
+                        metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.PRODUCED.name()));
+                    }
                     publisherChannel.send(x);
                 } catch (InterruptedException e) {
                     log.debug("Strand interrupted: " + Strand.currentStrand().getName());

@@ -1,8 +1,9 @@
 package it.enryold.quasarflow.interfaces;
 
+import co.paralleluniverse.strands.channels.Channel;
 import org.reactivestreams.Publisher;
 
-public interface IEmitter<T> extends IFlowable {
+public interface IEmitter<T> extends IFlowable<T> {
 
     <E extends IEmitter<T>> E broadcastEmitter(IEmitterTask<T> task);
     <E extends IEmitter<T>> E routedEmitter(IEmitterTask<T> task, IRoutingKeyExtractor<T> extractorFactory);
@@ -17,6 +18,7 @@ public interface IEmitter<T> extends IFlowable {
     <S extends IConsumer<T>> IEmitter<T> addConsumer(Injector<S> consumer);
 
 
+    Channel<T> getChannel();
     Publisher<T> getPublisher();
     Publisher<T> getPublisher(String routingKey);
 

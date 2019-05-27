@@ -5,9 +5,8 @@
 //import co.paralleluniverse.strands.channels.Channel;
 //import it.enryold.quasarflow.interfaces.IEmitterTask;
 //import it.enryold.quasarflow.interfaces.IFlow;
-//import it.enryold.quasarflow.models.QSettings;
+//import it.enryold.quasarflow.models.utils.QSettings;
 //import org.junit.jupiter.api.AfterEach;
-//import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Test;
 //
 //import java.util.List;

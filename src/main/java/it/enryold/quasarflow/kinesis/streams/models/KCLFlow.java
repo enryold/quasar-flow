@@ -3,75 +3,50 @@ package it.enryold.quasarflow.kinesis.streams.models;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorFactory;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
+import it.enryold.quasarflow.abstracts.AbstractFlow;
 import it.enryold.quasarflow.interfaces.IFlow;
-import it.enryold.quasarflow.interfaces.IFlowable;
 import it.enryold.quasarflow.kinesis.streams.consumer.v1.RecordProcessorFactory;
-import it.enryold.quasarflow.models.QSettings;
-
-import java.util.ArrayList;
-import java.util.List;
+import it.enryold.quasarflow.models.utils.QSettings;
 
 
-public class KCLFlow implements IFlow {
+public class KCLFlow extends AbstractFlow {
 
-    private List<IFlowable> startables = new ArrayList<>();
     private Worker kclWorker;
     private IRecordProcessorFactory recordProcessorFactory;
     private KinesisClientLibConfiguration kinesisClientLibConfiguration;
-    private QSettings settings;
 
 
     public KCLFlow(
                    KinesisClientLibConfiguration kinesisClientLibConfiguration,
                    QSettings settings){
+        super(settings);
         this.kinesisClientLibConfiguration = kinesisClientLibConfiguration;
-        this.settings = settings;
+
     }
 
     public KCLFlow(
             KinesisClientLibConfiguration kinesisClientLibConfiguration){
+        super();
         this.kinesisClientLibConfiguration = kinesisClientLibConfiguration;
-        this.settings = QSettings.standard();
     }
 
-    @Override
-    public void addStartable(IFlowable startable) {
-        startables.add(startable);
-    }
 
-    @Override
-    public QSettings getSettings() {
-        return null;
-    }
 
 
     public void setRecordProcessorFactory(RecordProcessorFactory recordProcessorFactory) {
         this.recordProcessorFactory = recordProcessorFactory;
     }
 
+
     @Override
-    public IFlow start() {
-
-
-        for(int i = startables.size()-1; i >= 0; i--){
-            IFlowable s = startables.get(i);
-            System.out.println("FLOW: "+s.toString());
-            s.start();
-        }
-
+    public <I extends IFlow> I start() {
+        super.start();
         kclWorker = new Worker.Builder()
                 .recordProcessorFactory(recordProcessorFactory)
                 .config(kinesisClientLibConfiguration)
                 .build();
         kclWorker.run();
-
-
-
-        return this;
+        return (I)this;
     }
 
-    @Override
-    public void destroy() {
-        startables.forEach(IFlowable::destroy);
-    }
 }

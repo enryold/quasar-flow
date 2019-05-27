@@ -2,16 +2,10 @@
 //
 //
 //import it.enryold.quasarflow.components.IAccumulatorFactory;
-//import it.enryold.quasarflow.interfaces.IEmitter;
-//import it.enryold.quasarflow.interfaces.IEmitterTask;
-//import it.enryold.quasarflow.interfaces.IFlow;
-//import it.enryold.quasarflow.interfaces.IFlowInjector;
-//import it.enryold.quasarflow.models.QEmitter;
-//import it.enryold.quasarflow.models.QSettings;
+//import it.enryold.quasarflow.interfaces.*;
+//import it.enryold.quasarflow.models.utils.QSettings;
 //import it.enryold.quasarflow.models.StringAccumulator;
-//import org.junit.jupiter.api.AfterAll;
 //import org.junit.jupiter.api.AfterEach;
-//import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Test;
 //
 //import java.util.List;
@@ -33,6 +27,7 @@
 //            currentFlow.destroy();
 //        }
 //    }
+//
 //
 //
 //
