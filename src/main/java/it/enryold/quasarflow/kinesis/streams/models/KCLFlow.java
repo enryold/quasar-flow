@@ -6,6 +6,7 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
 import it.enryold.quasarflow.interfaces.IFlow;
 import it.enryold.quasarflow.interfaces.IFlowable;
 import it.enryold.quasarflow.kinesis.streams.consumer.v1.RecordProcessorFactory;
+import it.enryold.quasarflow.models.QSettings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,16 +18,30 @@ public class KCLFlow implements IFlow {
     private Worker kclWorker;
     private IRecordProcessorFactory recordProcessorFactory;
     private KinesisClientLibConfiguration kinesisClientLibConfiguration;
+    private QSettings settings;
 
 
     public KCLFlow(
-                   KinesisClientLibConfiguration kinesisClientLibConfiguration){
+                   KinesisClientLibConfiguration kinesisClientLibConfiguration,
+                   QSettings settings){
         this.kinesisClientLibConfiguration = kinesisClientLibConfiguration;
+        this.settings = settings;
+    }
+
+    public KCLFlow(
+            KinesisClientLibConfiguration kinesisClientLibConfiguration){
+        this.kinesisClientLibConfiguration = kinesisClientLibConfiguration;
+        this.settings = QSettings.standard();
     }
 
     @Override
     public void addStartable(IFlowable startable) {
         startables.add(startable);
+    }
+
+    @Override
+    public QSettings getSettings() {
+        return null;
     }
 
 

@@ -7,12 +7,13 @@ import it.enryold.quasarflow.interfaces.*;
 public class QEmitter<T> extends AbstractEmitter<T> {
 
 
-    public QEmitter(IFlow flow) {
-        super(flow);
-    }
 
     public QEmitter(IFlow flow, String name) {
         super(flow, name);
+    }
+
+    public QEmitter(IFlow flow) {
+        super(flow, null);
     }
 
 

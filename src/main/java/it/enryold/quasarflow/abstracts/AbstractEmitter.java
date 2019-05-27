@@ -9,6 +9,7 @@ import it.enryold.quasarflow.interfaces.IEmitter;
 import it.enryold.quasarflow.interfaces.IEmitterTask;
 import it.enryold.quasarflow.interfaces.IFlow;
 import it.enryold.quasarflow.interfaces.IRoutingKeyExtractor;
+import it.enryold.quasarflow.models.QSettings;
 import org.reactivestreams.Publisher;
 
 import java.util.*;
@@ -16,15 +17,12 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractEmitter<T> implements IEmitter<T> {
 
-    private int emitterTaskChannelBuffer = 1_000;
-    private Channels.OverflowPolicy emitterTaskChannelOverflowPolicy = Channels.OverflowPolicy.BLOCK;
-    private int broadcasterChannelBuffer = 1_000;
-    private Channels.OverflowPolicy broadcasterChannelOverflowPolicy = Channels.OverflowPolicy.BLOCK;
     protected Channel<T> emitterTaskChannel;
     private Fiber emitterTaskStrand;
     private Publisher<T> emitterTaskPublisher;
     private Map<String, List<Channel<T>>> channels = new HashMap<>();
     private IEmitterTask<T> task;
+    private QSettings settings;
     private Fiber dispatcher;
     private String name;
     private IRoutingKeyExtractor<T> extractorFunction;
@@ -37,6 +35,7 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
 
     public AbstractEmitter(IFlow flow, String name){
         this.flow = flow;
+        this.settings = flow.getSettings();
         this.name = name == null ? String.valueOf(this.hashCode()) : name;
         flow.addStartable(this);
     }
@@ -54,7 +53,7 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     public <E extends IEmitter<T>> E broadcastEmitter(IEmitterTask<T> task)
     {
         this.task = task;
-        emitterTaskChannel = Channels.newChannel(emitterTaskChannelBuffer, emitterTaskChannelOverflowPolicy);
+        emitterTaskChannel = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
         emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> task.emit(emitterTaskChannel));
         emitterTaskPublisher = ReactiveStreams.toPublisher(emitterTaskChannel);
         return (E)this;
@@ -64,7 +63,7 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     public <E extends IEmitter<T>> E routedEmitter(IEmitterTask<T> task, IRoutingKeyExtractor<T> extractor) {
         this.task = task;
         this.extractorFunction = extractor;
-        emitterTaskChannel = Channels.newChannel(emitterTaskChannelBuffer, emitterTaskChannelOverflowPolicy);
+        emitterTaskChannel = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
         emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> task.emit(emitterTaskChannel));
         emitterTaskPublisher = ReactiveStreams.toPublisher(emitterTaskChannel);
         return (E)this;
@@ -101,7 +100,7 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
 
     private void buildBroadcaster()
     {
-        ReceivePort<T> receiver = ReactiveStreams.subscribe(broadcasterChannelBuffer, broadcasterChannelOverflowPolicy, emitterTaskPublisher);
+        ReceivePort<T> receiver = ReactiveStreams.subscribe(settings.getBufferSize(), settings.getOverflowPolicy(), emitterTaskPublisher);
         final List<Channel<T>> channelList = channels.entrySet()
                 .stream()
                 .flatMap(s -> s.getValue().stream())
@@ -128,7 +127,7 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
 
     private void buildRouted()
     {
-        ReceivePort<T> receiver = ReactiveStreams.subscribe(broadcasterChannelBuffer, broadcasterChannelOverflowPolicy, emitterTaskPublisher);
+        ReceivePort<T> receiver = ReactiveStreams.subscribe(settings.getBufferSize(), settings.getOverflowPolicy(), emitterTaskPublisher);
 
         final Map<String, List<Channel<T>>> channelsFinal = new HashMap<>(channels);
 
@@ -160,7 +159,7 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
 
     private Publisher<T> buildPublisher(String routingKey) {
 
-        Channel<T> chan = Channels.newChannel(emitterTaskChannelBuffer, emitterTaskChannelOverflowPolicy);
+        Channel<T> chan = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
         Publisher<T> pub = ReactiveStreams.toPublisher(chan);
 
         List<Channel<T>> list = channels.getOrDefault(routingKey, new ArrayList<>());

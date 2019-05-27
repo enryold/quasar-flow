@@ -5,6 +5,7 @@ import it.enryold.quasarflow.interfaces.IEmitterTask;
 import it.enryold.quasarflow.interfaces.IRoutingKeyExtractor;
 import it.enryold.quasarflow.models.QEmitter;
 import it.enryold.quasarflow.models.QFlow;
+import it.enryold.quasarflow.models.QSettings;
 
 public class QuasarFlow {
 
@@ -14,9 +15,15 @@ public class QuasarFlow {
     private QuasarFlow(){
         qFlow = new QFlow();
     }
+    private QuasarFlow(QSettings settings){
+        qFlow = new QFlow(settings);
+    }
 
     public static QuasarFlow newFlow(){
         return new QuasarFlow();
+    }
+    public static QuasarFlow newFlow(QSettings settings){
+        return new QuasarFlow(settings);
     }
 
     public <T, E extends IEmitter<T>> E broadcastEmitter(IEmitterTask<T> task){
