@@ -34,6 +34,26 @@ public class KCLEmitter extends AbstractEmitter<Record> {
     }
 
     @Override
+    public <S extends IProcessor<Record>> S useProcessor(IEmitterInjector<Record, S> emitterInjector) {
+        return null;
+    }
+
+    @Override
+    public <S extends IProcessor<Record>> IEmitter<Record> useProcessor(IEmitterInjector<Record, S> emitterInjector, Injector<S> processor) {
+        return null;
+    }
+
+    @Override
+    public <O> IOProcessor<Record, O> ioProcessor(IEmitterInjector<Record, IOProcessor<Record, O>> emitterInjector) {
+        return null;
+    }
+
+    @Override
+    public <O> IEmitter<O> ioProcessor(IEmitterInjector<Record, IOProcessor<Record, O>> emitterInjector, Injector<IOProcessor<Record, O>> processor) {
+        return null;
+    }
+
+    @Override
     public <S extends IConsumer<Record>> S addConsumer() {
         return  (S)new QConsumer<>(flow, this);
     }
@@ -44,6 +64,16 @@ public class KCLEmitter extends AbstractEmitter<Record> {
         return this;
     }
 
+    @Override
+    public <S extends IConsumer<Record>> S useConsumer(IEmitterInjector<Record, S> emitterInjector) {
+        return emitterInjector.inject(this);
+    }
+
+    @Override
+    public <S extends IConsumer<Record>> IEmitter<Record> useConsumer(IEmitterInjector<Record, S> emitterInjector, Injector<S> consumer) {
+        consumer.accept(emitterInjector.inject(this));
+        return this;
+    }
 
 
     @Override

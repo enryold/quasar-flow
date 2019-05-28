@@ -17,8 +17,7 @@ public interface IProcessor<I> extends IFlowable<I> {
     IEmitterList<I> processWithFanOut(int workers);
 
 
-    <T> IEmitterList<T> processWithFanOut(int workers,
-                                                           ITransform<I, T> transform);
+    <T> IEmitterList<T> processWithFanOut(int workers, ITransform<I, T> transform);
 
     IEmitterList<List<I>> processWithFanOutAndSizeBatching(
             int workers,
