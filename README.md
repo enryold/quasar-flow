@@ -44,17 +44,7 @@
 
 #### Emitter -> Processor -> Consumer
 ```java
- public class Main {
- 
-     public static void main(String[] args) {
-         
-         // Emit Task that emits 10 Strings
-         IEmitterTask<String> stringEmitterTask = publisherChannel -> {
-                     for(int i = 0; i<10; i++){ publisherChannel.send("String"+i); } 
-         };
-         
-         
-         // LINEAR LAYOUT
+// LINEAR LAYOUT
          QuasarFlow.newFlow()
                          .broadcastEmitter(stringEmitterTask) // BUILD A BROADCAST EMITTER FROM TASK
                          .addProcessor() // ADD A PROCESSOR
@@ -71,10 +61,7 @@
                             .addConsumer(c -> // ADD A CONSUMER
                                     c.consume(str -> System.out.println(str))); // CONSUME WITH CONSUMER TASK
                 })
-                .start();       
-     }
- 
- }
+                .start(); 
 
 
 
