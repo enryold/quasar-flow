@@ -29,6 +29,11 @@ public class HTTPProcessor<T> extends AbstractIOProcessor<QHTTPRequest<T>, QHTTP
         init();
     }
 
+    public HTTPProcessor<T> withOkHttpClient(OkHttpClient okHttpClient){
+        this.okHttpClient = okHttpClient;
+        return this;
+    }
+
 
     private void init(){
         processorAsyncTaskBuilder = () ->
