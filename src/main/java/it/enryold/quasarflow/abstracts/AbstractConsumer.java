@@ -47,8 +47,8 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
     private QSettings settings;
 
 
-    public AbstractConsumer(IFlow flow, IEmitter<E> eEmitter, String name){
-        this.flow = flow;
+    public AbstractConsumer(IEmitter<E> eEmitter, String name){
+        this.flow = eEmitter.flow();
         this.emitter = eEmitter;
         this.settings = flow.getSettings();
         this.name = name == null ? getClass().getSimpleName()+this.hashCode() : name;
@@ -56,8 +56,8 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
     }
 
 
-    public AbstractConsumer(IFlow flow, IEmitter<E> eEmitter){
-        this(flow, eEmitter, null);
+    public AbstractConsumer(IEmitter<E> eEmitter){
+        this(eEmitter, null);
     }
 
 

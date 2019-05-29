@@ -38,20 +38,22 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
 
-    private List<Fiber<Void>> subscriberStrands = new ArrayList<>();
+    protected List<Fiber<Void>> subscriberStrands = new ArrayList<>();
+    protected Channel<QMetric> metricChannel;
+    protected QSettings settings;
+
+
     private Fiber<Void> dispatcherStrand;
     private Channel<E>[] rrChannels;
     private List<ReceivePort<E>> processorChannels = new ArrayList<>();
-    private Channel<QMetric> metricChannel;
     private IEmitter<E> emitter;
-    private QSettings settings;
     private String name;
     private String routingKey;
     private IFlow flow;
 
 
-    public AbstractProcessor(IFlow flow, IEmitter<E> eEmitter, String name, String routingKey){
-        this.flow = flow;
+    public AbstractProcessor(IEmitter<E> eEmitter, String name, String routingKey){
+        this.flow = eEmitter.flow();
         this.emitter = eEmitter;
         this.settings = flow.getSettings();
         this.name = name == null ? getClass().getSimpleName()+this.hashCode() : name;
@@ -59,14 +61,13 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
         flow.addStartable(this);
     }
 
-    public AbstractProcessor(IFlow flow, IEmitter<E> eEmitter, String routingKey){
-        this(flow, eEmitter, null, routingKey);
+    public AbstractProcessor(IEmitter<E> eEmitter, String routingKey){
+        this(eEmitter, null, routingKey);
     }
 
-    public AbstractProcessor(IFlow flow, IEmitter<E> eEmitter){
-        this(flow, eEmitter, "BROADCAST");
+    public AbstractProcessor(IEmitter<E> eEmitter){
+        this(eEmitter, "BROADCAST");
     }
-
 
 
     @Override
@@ -95,7 +96,7 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
 
 
 
-    private <T>ReceivePort<T> buildProcessor(Publisher<E> publisher, ITransform<E, T> transform)
+    protected  <T>ReceivePort<T> buildProcessor(Publisher<E> publisher, ITransform<E, T> transform)
     {
         Processor<E, T> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<T>>) (in, out) -> {
             for (; ; ) {
@@ -116,7 +117,7 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
     }
 
 
-    private ReceivePort<E> buildProcessor(Publisher<E> publisher)
+    protected ReceivePort<E> buildProcessor(Publisher<E> publisher)
     {
         final Processor<E, E> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<E>>) (in, out) -> {
             for (; ; ) {
@@ -134,7 +135,7 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
     }
 
 
-    private ReceivePort<List<E>> buildProcessorWithSizeBatching(Publisher<E> publisher,
+    protected ReceivePort<List<E>> buildProcessorWithSizeBatching(Publisher<E> publisher,
                                                                 int chunkSize,
                                                                 int flushTimeout,
                                                                 TimeUnit flushTimeUnit)
@@ -180,7 +181,7 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
 
 
 
-    private <T>ReceivePort<List<T>> buildProcessorWithByteBatching(Publisher<E> publisher,
+    protected <T>ReceivePort<List<T>> buildProcessorWithByteBatching(Publisher<E> publisher,
                                                                    IAccumulatorFactory<E, T> accumulatorFactory,
                                                                    int flushTimeout,
                                                                    TimeUnit flushTimeUnit)
@@ -267,31 +268,10 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
     }
 
 
-    private <I>Fiber<Void> subscribeFiber(Channel<I> publisherChannel, ReceivePort<I> channel)
+    private  <I>Fiber<Void> subscribeFiber(Channel<I> publisherChannel, ReceivePort<I> channel)
     {
-        return new Fiber<>((SuspendableRunnable) () -> {
-            for (; ; ) {
-                try{
-                    I x = channel.receive();
-                    if (x == null)
-                        break;
-
-                    if(metricChannel != null) {
-                        metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.PRODUCED.name()));
-                    }
-                    publisherChannel.send(x);
-
-                }
-                catch (InterruptedException e){
-                    log.debug("Strand interrupted: "+Strand.currentStrand().getName());
-                }
-                catch (Exception e){
-                    log.error("Strand in Exception: "+Strand.currentStrand().getName()+" - Message: "+e.getMessage());
-                    e.printStackTrace();
-                }
-
-            }
-        });
+        final IEmitterTask<I> task = this.buildEmitterTask(channel);
+        return new Fiber<>((SuspendableRunnable) () -> task.emit(publisherChannel));
     }
 
 
@@ -304,17 +284,10 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
                 .forEach(subscriberStrands::add);
 
         return new QEmitter<I>(flow)
-                .broadcastEmitter(publisherChannel -> {
-                    for(;;){
-                        if(metricChannel != null) {
-                            metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.PRODUCED.name()));
-                        }
-                        publisherChannel.send(fanInChannel.receive());
-                    }
-                });
+                .broadcastEmitter(this.buildEmitterTask(fanInChannel));
     }
 
-    private <I> IEmitterTask<I> buildEmitterTask(ReceivePort<I> channel)
+    protected <I> IEmitterTask<I> buildEmitterTask(ReceivePort<I> channel)
     {
         return publisherChannel -> {
             for (; ; ) {

@@ -42,6 +42,9 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     }
 
 
+
+
+
     @Override
     public <I extends IFlowable<T>> I withMetricChannel(Channel<QMetric> metricChannel) {
         this.metricChannel = metricChannel;
@@ -85,6 +88,63 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
         emitterTaskPublisher = ReactiveStreams.toPublisher(emitterTaskChannel);
         return (E)this;
     }
+
+
+    @Override
+    public <S extends IProcessor<T>> IEmitter<T> addProcessor(Injector<S> processorInjector){
+        S processor = addProcessor();
+        processorInjector.accept(processor);
+        return currentInstance();
+    }
+
+    @Override
+    public <S extends IProcessor<T>> IEmitter<T> addProcessor(String routingKey, Injector<S> processorInjector){
+        S processor = addProcessor(routingKey);
+        processorInjector.accept(processor);
+        return currentInstance();
+    }
+
+    @Override
+    public <S extends IProcessor<T>> S useProcessor(IEmitterInjector<T, S> emitterInjector){
+        return emitterInjector.inject(currentInstance());
+    }
+
+    @Override
+    public <S extends IProcessor<T>> IEmitter<T> useProcessor(IEmitterInjector<T, S> emitterInjector, Injector<S> processorInjector){
+        IEmitter<T> emitter = currentInstance();
+        processorInjector.accept(emitterInjector.inject(emitter));
+        return emitter;
+    }
+
+    @Override
+    public <O> IOProcessor<T, O> ioProcessor(IEmitterInjector<T, IOProcessor<T, O>> emitterInjector){
+        return emitterInjector.inject(currentInstance());
+    }
+
+    @Override
+    public <O> IEmitter<O> ioProcessor(IEmitterInjector<T, IOProcessor<T, O>> emitterInjector, IOProcessorInjector<T, O, IEmitter<O>> processorInjector){
+        return processorInjector.inject(emitterInjector.inject(currentInstance()));
+    }
+
+    @Override
+    public <S extends IConsumer<T>> IEmitter<T> addConsumer(Injector<S> processorInjector){
+        S consumer = addConsumer();
+        processorInjector.accept(consumer);
+        return currentInstance();
+    }
+
+    @Override
+    public <S extends IConsumer<T>> S useConsumer(IEmitterInjector<T, S> emitterInjector){
+        return emitterInjector.inject(currentInstance());
+    }
+
+    @Override
+    public <S extends IConsumer<T>> IEmitter<T> useConsumer(IEmitterInjector<T, S> emitterInjector, Injector<S> processorInjector){
+        IEmitter<T> emitter = currentInstance();
+        processorInjector.accept(emitterInjector.inject(emitter));
+        return emitter;
+    }
+
 
 
     @Override

@@ -1,12 +1,10 @@
 package it.enryold.quasarflow.kinesis.streams.models;
 
-import co.paralleluniverse.strands.channels.Channel;
 import com.amazonaws.services.kinesis.model.Record;
-import it.enryold.quasarflow.models.QConsumer;
-import it.enryold.quasarflow.models.QProcessor;
 import it.enryold.quasarflow.abstracts.AbstractEmitter;
 import it.enryold.quasarflow.interfaces.*;
-import it.enryold.quasarflow.interfaces.*;
+import it.enryold.quasarflow.models.QConsumer;
+import it.enryold.quasarflow.models.QProcessor;
 
 public class KCLEmitter extends AbstractEmitter<Record> {
 
@@ -16,7 +14,10 @@ public class KCLEmitter extends AbstractEmitter<Record> {
     }
 
 
-
+    @Override
+    public <EM extends IEmitter<Record>> EM currentInstance() {
+        return (EM)this;
+    }
 
     public <E extends IEmitter<Record>> E routedEmitter(IRoutingKeyExtractor<Record> extractor) {
         return super.routedEmitter(publisherChannel -> { }, extractor);
@@ -25,7 +26,7 @@ public class KCLEmitter extends AbstractEmitter<Record> {
 
 
     public <S extends IProcessor<Record>> S addProcessor(String partitionKey) {
-        return (S)new QProcessor<>(flow, this, partitionKey);
+        return (S)new QProcessor<>(this, partitionKey);
     }
 
     public <S extends IProcessor<Record>> KCLEmitter addProcessor(String partitionKey, Injector<S> consumer) {
@@ -35,14 +36,9 @@ public class KCLEmitter extends AbstractEmitter<Record> {
 
     @Override
     public <S extends IConsumer<Record>> S addConsumer() {
-        return  (S)new QConsumer<>(flow, this);
+        return  (S)new QConsumer<>(this);
     }
 
-    @Override
-    public <S extends IConsumer<Record>> KCLEmitter addConsumer(Injector<S> consumer) {
-        consumer.accept(addConsumer());
-        return this;
-    }
 
 
 
