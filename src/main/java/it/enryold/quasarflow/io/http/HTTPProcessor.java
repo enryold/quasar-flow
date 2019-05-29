@@ -10,21 +10,21 @@ import it.enryold.quasarflow.io.http.models.QHTTPRequest;
 import it.enryold.quasarflow.io.http.models.QHTTPRequestCallback;
 import it.enryold.quasarflow.io.http.models.QHTTPResponse;
 
-public class HTTPProcessor extends AbstractIOProcessor<QHTTPRequest, QHTTPResponse> {
+public class HTTPProcessor<T> extends AbstractIOProcessor<QHTTPRequest<T>, QHTTPResponse<T>> {
 
     private OkHttpClient okHttpClient = new FiberOkHttpClient();
 
-    public HTTPProcessor(IEmitter<QHTTPRequest> eEmitter, String name, String routingKey) {
+    public HTTPProcessor(IEmitter<QHTTPRequest<T>> eEmitter, String name, String routingKey) {
         super(eEmitter, name, routingKey);
         init();
     }
 
-    public HTTPProcessor(IEmitter<QHTTPRequest> eEmitter, String routingKey) {
+    public HTTPProcessor(IEmitter<QHTTPRequest<T>> eEmitter, String routingKey) {
         super(eEmitter, routingKey);
         init();
     }
 
-    public HTTPProcessor(IEmitter<QHTTPRequest> eEmitter) {
+    public HTTPProcessor(IEmitter<QHTTPRequest<T>> eEmitter) {
         super(eEmitter);
         init();
     }
@@ -32,9 +32,9 @@ public class HTTPProcessor extends AbstractIOProcessor<QHTTPRequest, QHTTPRespon
 
     private void init(){
         processorAsyncTaskBuilder = () ->
-                (IOProcessorAsyncTask<QHTTPRequest, QHTTPResponse>)
+                (IOProcessorAsyncTask<QHTTPRequest<T>, QHTTPResponse<T>>)
                         (elm, sendPort) -> okHttpClient.newCall(elm.getRequest())
-                                .enqueue(new QHTTPRequestCallback(qhttpResponse -> {
+                                .enqueue(new QHTTPRequestCallback<>(elm.getAttachedDatas(),qhttpResponse -> {
                                     try {
                                         sendPort.send(qhttpResponse);
                                     } catch (SuspendExecution | InterruptedException suspendExecution) {

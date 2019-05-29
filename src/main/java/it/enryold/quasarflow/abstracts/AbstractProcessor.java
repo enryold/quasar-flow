@@ -52,8 +52,8 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
     private IFlow flow;
 
 
-    public AbstractProcessor(IFlow flow, IEmitter<E> eEmitter, String name, String routingKey){
-        this.flow = flow;
+    public AbstractProcessor(IEmitter<E> eEmitter, String name, String routingKey){
+        this.flow = eEmitter.flow();
         this.emitter = eEmitter;
         this.settings = flow.getSettings();
         this.name = name == null ? getClass().getSimpleName()+this.hashCode() : name;
@@ -61,14 +61,13 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
         flow.addStartable(this);
     }
 
-    public AbstractProcessor(IFlow flow, IEmitter<E> eEmitter, String routingKey){
-        this(flow, eEmitter, null, routingKey);
+    public AbstractProcessor(IEmitter<E> eEmitter, String routingKey){
+        this(eEmitter, null, routingKey);
     }
 
-    public AbstractProcessor(IFlow flow, IEmitter<E> eEmitter){
-        this(flow, eEmitter, "BROADCAST");
+    public AbstractProcessor(IEmitter<E> eEmitter){
+        this(eEmitter, "BROADCAST");
     }
-
 
 
     @Override

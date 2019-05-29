@@ -26,16 +26,13 @@
 //import it.enryold.quasarflow.kinesis.streams.producer.hashproviders.HashProviderFactory;
 //import it.enryold.quasarflow.kinesis.streams.producer.hashproviders.roundrobin.RRStreamShardHelperFactory;
 //import it.enryold.quasarflow.models.User;
-//import org.junit.Test;
-//import org.junit.runner.RunWith;
-//import org.junit.runners.JUnit4;
+//import org.junit.jupiter.api.Test;
 //
 //import java.util.Collections;
 //import java.util.List;
 //import java.util.UUID;
 //import java.util.concurrent.TimeUnit;
 //
-//@RunWith(JUnit4.class)
 //public class TestKinesisCIO extends TestUtils{
 //
 //

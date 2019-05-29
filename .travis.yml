@@ -6,7 +6,7 @@ jdk:
 
 script:
   - gradle -v
-  - ./gradlew build --debug --scan
+  - ./gradlew build --info --scan
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock

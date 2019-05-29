@@ -1,12 +1,10 @@
 package it.enryold.quasarflow.kinesis.streams.models;
 
-import co.paralleluniverse.strands.channels.Channel;
 import com.amazonaws.services.kinesis.model.Record;
-import it.enryold.quasarflow.models.QConsumer;
-import it.enryold.quasarflow.models.QProcessor;
 import it.enryold.quasarflow.abstracts.AbstractEmitter;
 import it.enryold.quasarflow.interfaces.*;
-import it.enryold.quasarflow.interfaces.*;
+import it.enryold.quasarflow.models.QConsumer;
+import it.enryold.quasarflow.models.QProcessor;
 
 public class KCLEmitter extends AbstractEmitter<Record> {
 
@@ -16,7 +14,10 @@ public class KCLEmitter extends AbstractEmitter<Record> {
     }
 
 
-
+    @Override
+    public <EM extends IEmitter<Record>> EM currentInstance() {
+        return (EM)this;
+    }
 
     public <E extends IEmitter<Record>> E routedEmitter(IRoutingKeyExtractor<Record> extractor) {
         return super.routedEmitter(publisherChannel -> { }, extractor);
@@ -25,7 +26,7 @@ public class KCLEmitter extends AbstractEmitter<Record> {
 
 
     public <S extends IProcessor<Record>> S addProcessor(String partitionKey) {
-        return (S)new QProcessor<>(flow, this, partitionKey);
+        return (S)new QProcessor<>(this, partitionKey);
     }
 
     public <S extends IProcessor<Record>> KCLEmitter addProcessor(String partitionKey, Injector<S> consumer) {
@@ -34,46 +35,11 @@ public class KCLEmitter extends AbstractEmitter<Record> {
     }
 
     @Override
-    public <S extends IProcessor<Record>> S useProcessor(IEmitterInjector<Record, S> emitterInjector) {
-        return null;
-    }
-
-    @Override
-    public <S extends IProcessor<Record>> IEmitter<Record> useProcessor(IEmitterInjector<Record, S> emitterInjector, Injector<S> processor) {
-        return null;
-    }
-
-    @Override
-    public <O> IOProcessor<Record, O> ioProcessor(IEmitterInjector<Record, IOProcessor<Record, O>> emitterInjector) {
-        return null;
-    }
-
-    @Override
-    public <O> IEmitter<O> ioProcessor(IEmitterInjector<Record, IOProcessor<Record, O>> emitterInjector, Injector<IOProcessor<Record, O>> processor) {
-        return null;
-    }
-
-    @Override
     public <S extends IConsumer<Record>> S addConsumer() {
-        return  (S)new QConsumer<>(flow, this);
+        return  (S)new QConsumer<>(this);
     }
 
-    @Override
-    public <S extends IConsumer<Record>> KCLEmitter addConsumer(Injector<S> consumer) {
-        consumer.accept(addConsumer());
-        return this;
-    }
 
-    @Override
-    public <S extends IConsumer<Record>> S useConsumer(IEmitterInjector<Record, S> emitterInjector) {
-        return emitterInjector.inject(this);
-    }
-
-    @Override
-    public <S extends IConsumer<Record>> IEmitter<Record> useConsumer(IEmitterInjector<Record, S> emitterInjector, Injector<S> consumer) {
-        consumer.accept(emitterInjector.inject(this));
-        return this;
-    }
 
 
     @Override

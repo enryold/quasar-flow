@@ -7,17 +7,15 @@ import it.enryold.quasarflow.interfaces.IFlow;
 public class QProcessor<T> extends AbstractProcessor<T> {
 
 
-    public QProcessor(IFlow flow, IEmitter<T> eEmitter, String name, String routingKey) {
-        super(flow, eEmitter, name, routingKey);
+    public QProcessor(IEmitter<T> eEmitter, String name, String routingKey) {
+        super(eEmitter, name, routingKey);
     }
 
-    public QProcessor(IFlow flow, IEmitter<T> eEmitter, String routingKey) {
-        super(flow, eEmitter, routingKey);
+    public QProcessor(IEmitter<T> eEmitter, String routingKey) {
+        super(eEmitter, routingKey);
     }
 
-    public QProcessor(IFlow flow, IEmitter<T> eEmitter) {
-        super(flow, eEmitter);
+    public QProcessor(IEmitter<T> eEmitter) {
+        super(eEmitter);
     }
-
-
 }

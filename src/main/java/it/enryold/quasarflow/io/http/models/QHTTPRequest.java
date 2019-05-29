@@ -5,8 +5,9 @@ import it.enryold.quasarflow.io.http.consts.QHttpConsts;
 
 import java.util.UUID;
 
-public class QHTTPRequest {
+public class QHTTPRequest<T> {
 
+    private T attachedDatas;
     private String requestId;
     private Request request;
 
@@ -22,6 +23,13 @@ public class QHTTPRequest {
         addRequestIdHeader();
     }
 
+    public QHTTPRequest(String requestId, Request request, T attachedDatas){
+        this.request = request;
+        this.requestId = requestId;
+        this.attachedDatas = attachedDatas;
+        addRequestIdHeader();
+    }
+
     private void addRequestIdHeader(){
         this.request = request.newBuilder()
                 .addHeader(QHttpConsts.REQUEST_HEADER, requestId)
@@ -34,5 +42,9 @@ public class QHTTPRequest {
 
     public Request getRequest() {
         return request;
+    }
+
+    public T getAttachedDatas() {
+        return attachedDatas;
     }
 }

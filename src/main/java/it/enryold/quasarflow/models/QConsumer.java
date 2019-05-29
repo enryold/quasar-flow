@@ -7,11 +7,11 @@ import it.enryold.quasarflow.interfaces.IFlow;
 public class QConsumer<T> extends AbstractConsumer<T> {
 
 
-    public QConsumer(IFlow flow, IEmitter<T> tEmitter, String name) {
-        super(flow, tEmitter, name);
+    public QConsumer(IEmitter<T> eEmitter, String name) {
+        super(eEmitter, name);
     }
 
-    public QConsumer(IFlow flow, IEmitter<T> tEmitter) {
-        super(flow, tEmitter, null);
+    public QConsumer(IEmitter<T> eEmitter) {
+        super(eEmitter);
     }
 }

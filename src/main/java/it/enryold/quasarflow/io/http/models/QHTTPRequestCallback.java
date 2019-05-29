@@ -10,14 +10,16 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-public class QHTTPRequestCallback implements Callback
+public class QHTTPRequestCallback<T> implements Callback
 {
     private Logger log = LoggerFactory.getLogger(getClass());
     private long start;
-    private Consumer<QHTTPResponse> consumer;
+    private Consumer<QHTTPResponse<T>> consumer;
+    private T attachedDatas;
 
-    public QHTTPRequestCallback(Consumer<QHTTPResponse> consumer) {
+    public QHTTPRequestCallback(T attachedDatas, Consumer<QHTTPResponse<T>> consumer) {
         this.consumer = consumer;
+        this.attachedDatas = attachedDatas;
         start = System.currentTimeMillis();
     }
 
@@ -30,7 +32,7 @@ public class QHTTPRequestCallback implements Callback
 
         log.error("["+requestId+"] HTTP async request to "+request.url().toString()+" executed in "+execution+" ms with exception: "+e.getMessage());
 
-        consumer.accept(QHTTPResponse.error(requestId, execution));
+        consumer.accept(QHTTPResponse.error(requestId, execution, attachedDatas));
     }
 
     @Override
@@ -42,11 +44,8 @@ public class QHTTPRequestCallback implements Callback
 
         log.info("["+requestId+"] HTTP async request to "+response.request().url().toString()+" executed in "+execution+" ms ");
 
-        if(response.code() != 200){
-            consumer.accept(QHTTPResponse.error(requestId, execution));
-        }else{
-            consumer.accept(QHTTPResponse.success(requestId, execution, response));
-        }
+        consumer.accept(QHTTPResponse.success(requestId, execution, response, attachedDatas));
+
     }
 
 
