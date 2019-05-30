@@ -10,7 +10,7 @@ import it.enryold.quasarflow.models.utils.QSettings;
 public class QuasarFlow {
 
 
-    private QFlow qFlow;
+    private IFlow qFlow;
 
     private QuasarFlow(){
         qFlow = new QFlow();
@@ -30,6 +30,12 @@ public class QuasarFlow {
         return new QuasarFlow(settings, metricChannel);
     }
 
+
+
+    public <T, E extends IEmitter<T>> E withEmitter(IEmitter<T> emitter){
+        this.qFlow = emitter.flow();
+        return (E)emitter;
+    }
 
 
     public <T, E extends IEmitter<T>> E broadcastEmitter(IEmitterTask<T> task){
