@@ -11,7 +11,13 @@ public abstract class AbstractEmitterList<T> implements IEmitterList<T> {
 
     private List<IEmitter<T>> emitters;
     private IFlow flow;
+    private String name;
 
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public AbstractEmitterList(List<IEmitter<T>> emitters){
         for(IEmitter<T> e : emitters){
@@ -33,4 +39,9 @@ public abstract class AbstractEmitterList<T> implements IEmitterList<T> {
         for(IEmitter<T> em : emitters){ injector.accept(em);}
         return flow;
     }
+
+    public String toString() {
+        return "EMITTERLIST: "+((name == null) ? this.hashCode() : name);
+    }
+
 }

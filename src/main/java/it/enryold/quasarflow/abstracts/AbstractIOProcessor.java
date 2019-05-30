@@ -16,6 +16,7 @@ import it.enryold.quasarflow.models.QEmitter;
 import it.enryold.quasarflow.models.QEmitterList;
 import it.enryold.quasarflow.models.utils.FnBuildMetric;
 import it.enryold.quasarflow.models.utils.QMetric;
+import it.enryold.quasarflow.models.utils.QRoutingKey;
 import it.enryold.quasarflow.models.utils.QSettings;
 import org.reactivestreams.Processor;
 import org.reactivestreams.Publisher;
@@ -45,28 +46,33 @@ public abstract class AbstractIOProcessor<E, O> implements IOProcessor<E, O> {
     private List<ReceivePort<E>> processorChannels = new ArrayList<>();
     private IEmitter<E> emitter;
     private String name;
-    private String routingKey;
+    private QRoutingKey routingKey;
     private IFlow flow;
     protected IOProcessorAsyncTaskBuilder<E, O> processorAsyncTaskBuilder;
 
 
-    public AbstractIOProcessor(IEmitter<E> eEmitter, String name, String routingKey){
+    public AbstractIOProcessor(IEmitter<E> eEmitter, String name, QRoutingKey routingKey){
         this.flow = eEmitter.flow();
         this.emitter = eEmitter;
         this.settings = flow.getSettings();
         this.name = name == null ? getClass().getSimpleName()+this.hashCode() : name;
-        this.routingKey = routingKey;
+        this.routingKey = routingKey == null ? QRoutingKey.broadcast() : routingKey;
         flow.addStartable(this);
     }
 
-    public AbstractIOProcessor(IEmitter<E> eEmitter, String routingKey){
+    public AbstractIOProcessor(IEmitter<E> eEmitter, QRoutingKey routingKey){
         this(eEmitter, null, routingKey);
     }
 
     public AbstractIOProcessor(IEmitter<E> eEmitter){
-        this(eEmitter, "BROADCAST");
+        this(eEmitter, null);
     }
 
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
 
     @Override
     public IOProcessor<E, O> withAsyncTaskBuilder(IOProcessorAsyncTaskBuilder<E, O> processorAsyncTaskBuilder) {

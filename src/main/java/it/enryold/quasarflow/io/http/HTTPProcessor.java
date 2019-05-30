@@ -9,17 +9,18 @@ import it.enryold.quasarflow.interfaces.IOProcessorAsyncTask;
 import it.enryold.quasarflow.io.http.models.QHTTPRequest;
 import it.enryold.quasarflow.io.http.models.QHTTPRequestCallback;
 import it.enryold.quasarflow.io.http.models.QHTTPResponse;
+import it.enryold.quasarflow.models.utils.QRoutingKey;
 
 public class HTTPProcessor<T> extends AbstractIOProcessor<QHTTPRequest<T>, QHTTPResponse<T>> {
 
     private OkHttpClient okHttpClient = new FiberOkHttpClient();
 
-    public HTTPProcessor(IEmitter<QHTTPRequest<T>> eEmitter, String name, String routingKey) {
+    public HTTPProcessor(IEmitter<QHTTPRequest<T>> eEmitter, String name, QRoutingKey routingKey) {
         super(eEmitter, name, routingKey);
         init();
     }
 
-    public HTTPProcessor(IEmitter<QHTTPRequest<T>> eEmitter, String routingKey) {
+    public HTTPProcessor(IEmitter<QHTTPRequest<T>> eEmitter, QRoutingKey routingKey) {
         super(eEmitter, routingKey);
         init();
     }

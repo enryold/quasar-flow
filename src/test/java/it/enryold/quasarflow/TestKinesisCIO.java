@@ -26,6 +26,7 @@
 //import it.enryold.quasarflow.kinesis.streams.producer.hashproviders.HashProviderFactory;
 //import it.enryold.quasarflow.kinesis.streams.producer.hashproviders.roundrobin.RRStreamShardHelperFactory;
 //import it.enryold.quasarflow.models.User;
+//import it.enryold.quasarflow.models.utils.QRoutingKey;
 //import org.junit.jupiter.api.Test;
 //
 //import java.util.Collections;
@@ -146,7 +147,7 @@
 //
 //        KSQFlow.newFlow(kclConfiguration())
 //                .kinesisEmitter(recordProcessorFactory)
-//                .addProcessor("PARTITION_KEY", sub -> sub
+//                .addProcessor(QRoutingKey.withKey("PARTITION_KEY"), sub -> sub
 //                        .process(new KinesisJsonListDecoder<>(User.class))
 //                        .addConsumer(rec -> rec.consumeWithFanOutAndSizeBatching(4, 100, 10, TimeUnit.SECONDS,
 //                                (IConsumerTaskFactory<List<List<User>>>) () -> elm -> System.out.println(Strand.currentStrand().getName()+" - List received with size: "+elm.size()))))

@@ -62,6 +62,11 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
 
 
     @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
     public <I extends IFlowable<E>> I withMetricChannel(Channel<QMetric> metricChannel) {
         this.metricChannel = metricChannel;
         return (I)this;
