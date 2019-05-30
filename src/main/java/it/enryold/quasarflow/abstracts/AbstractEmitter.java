@@ -193,7 +193,11 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     public void destroy() {
         emitterTaskStrand.cancel(true);
         emitterTaskChannel.close();
-        channels.entrySet().stream().flatMap(s -> s.getValue().stream()).forEach(SendPort::close);
+        channels.entrySet()
+                .stream()
+                .flatMap(s -> s.getValue().stream())
+                .filter(s -> !s.isClosed())
+                .forEach(SendPort::close);
     }
 
     private void buildBroadcaster()
