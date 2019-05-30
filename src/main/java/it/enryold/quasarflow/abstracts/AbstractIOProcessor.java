@@ -252,10 +252,10 @@ public abstract class AbstractIOProcessor<E, O> implements IOProcessor<E, O> {
     public void destroy() {
         if(dispatcherStrand != null){
             dispatcherStrand.cancel(true);
-            Stream.of(rrChannels).filter(s -> !s.isClosed()).forEach(SendPort::close);
+            Stream.of(rrChannels).filter(s -> s != null && !s.isClosed()).forEach(SendPort::close);
         }
 
         subscriberStrands.stream().filter(Fiber::isAlive).forEach(s -> s.cancel(true));
-        processorChannels.stream().filter(s -> !s.isClosed()).forEach(ReceivePort::close);
+        processorChannels.stream().filter(s -> s != null && !s.isClosed()).forEach(ReceivePort::close);
     }
 }

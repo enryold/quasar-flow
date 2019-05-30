@@ -346,6 +346,6 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
     @Override
     public void destroy() {
         subscriberStrands.stream().filter(Fiber::isAlive).forEach(s -> s.cancel(true));
-        processorChannels.stream().filter(s -> !s.isClosed()).forEach(ReceivePort::close);
+        processorChannels.stream().filter(s -> s != null && !s.isClosed()).forEach(ReceivePort::close);
     }
 }

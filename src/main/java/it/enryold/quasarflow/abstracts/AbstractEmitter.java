@@ -196,7 +196,7 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
         channels.entrySet()
                 .stream()
                 .flatMap(s -> s.getValue().stream())
-                .filter(s -> !s.isClosed())
+                .filter(s -> s != null && !s.isClosed())
                 .forEach(SendPort::close);
     }
 
