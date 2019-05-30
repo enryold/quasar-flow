@@ -9,6 +9,7 @@ import it.enryold.quasarflow.enums.QMetricType;
 import it.enryold.quasarflow.interfaces.*;
 import it.enryold.quasarflow.models.utils.FnBuildMetric;
 import it.enryold.quasarflow.models.utils.QMetric;
+import it.enryold.quasarflow.models.utils.QRoutingKey;
 import it.enryold.quasarflow.models.utils.QSettings;
 import org.reactivestreams.Publisher;
 
@@ -20,7 +21,7 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     protected Channel<T> emitterTaskChannel;
     private Fiber emitterTaskStrand;
     private Publisher<T> emitterTaskPublisher;
-    private Map<String, List<Channel<T>>> channels = new HashMap<>();
+    final private Map<String, List<Channel<T>>> channels = new HashMap<>();
     private Channel<QMetric> metricChannel;
     private IEmitterTask<T> task;
     private QSettings settings;
@@ -42,8 +43,10 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     }
 
 
-
-
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
 
     @Override
     public <I extends IFlowable<T>> I withMetricChannel(Channel<QMetric> metricChannel) {
@@ -91,6 +94,13 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
 
 
     @Override
+    public <S extends IProcessor<T>> S addProcessor(String name) {
+        S processor = addProcessor();
+        processor.setName(name);
+        return processor;
+    }
+
+    @Override
     public <S extends IProcessor<T>> IEmitter<T> addProcessor(Injector<S> processorInjector){
         S processor = addProcessor();
         processorInjector.accept(processor);
@@ -98,7 +108,7 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     }
 
     @Override
-    public <S extends IProcessor<T>> IEmitter<T> addProcessor(String routingKey, Injector<S> processorInjector){
+    public <S extends IProcessor<T>> IEmitter<T> addProcessor(QRoutingKey routingKey, Injector<S> processorInjector){
         S processor = addProcessor(routingKey);
         processorInjector.accept(processor);
         return currentInstance();
@@ -124,6 +134,13 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     @Override
     public <O> IEmitter<O> ioProcessor(IEmitterInjector<T, IOProcessor<T, O>> emitterInjector, IOProcessorInjector<T, O, IEmitter<O>> processorInjector){
         return processorInjector.inject(emitterInjector.inject(currentInstance()));
+    }
+
+    @Override
+    public <S extends IConsumer<T>> S addConsumer(String name) {
+        S consumer = addConsumer();
+        consumer.setName(name);
+        return consumer;
     }
 
     @Override
@@ -176,7 +193,11 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     public void destroy() {
         emitterTaskStrand.cancel(true);
         emitterTaskChannel.close();
-        channels.entrySet().stream().flatMap(s -> s.getValue().stream()).forEach(SendPort::close);
+        channels.entrySet()
+                .stream()
+                .flatMap(s -> s.getValue().stream())
+                .filter(s -> s != null && !s.isClosed())
+                .forEach(SendPort::close);
     }
 
     private void buildBroadcaster()
@@ -220,10 +241,8 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
                     break;
                 }
 
-                List<Channel<T>> list = extractorFunction
-                        .extactRoutingKeyFromObject(x)
-                        .map(channelsFinal::get)
-                        .orElse(new ArrayList<>());
+                List<Channel<T>> list = channelsFinal
+                        .getOrDefault(extractorFunction.extactRoutingKeyFromObject(x).getKey(), new ArrayList<>());
 
 
                 for(Channel<T> ch : list){
@@ -238,24 +257,24 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     }
 
 
-    private Publisher<T> buildPublisher(String routingKey) {
+    private Publisher<T> buildPublisher(QRoutingKey routingKey) {
 
         Channel<T> chan = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
         Publisher<T> pub = ReactiveStreams.toPublisher(chan);
 
-        List<Channel<T>> list = channels.getOrDefault(routingKey, new ArrayList<>());
+        List<Channel<T>> list = channels.getOrDefault(routingKey.getKey(), new ArrayList<>());
         list.add(chan);
-        channels.put(routingKey, list);
+        channels.put(routingKey.getKey(), list);
         return pub;
     }
 
     @Override
     public Publisher<T> getPublisher() {
-        return buildPublisher("BROADCAST");
+        return buildPublisher(QRoutingKey.broadcast());
     }
 
     @Override
-    public Publisher<T> getPublisher(String routingKey) {
+    public Publisher<T> getPublisher(QRoutingKey routingKey) {
 
         if(extractorFunction == null){
             return getPublisher();

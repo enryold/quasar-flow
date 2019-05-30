@@ -36,8 +36,8 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
 
-    private List<Fiber<Void>> subscriberStrands = new ArrayList<>();
-    private List<ReceivePort> processorChannels = new ArrayList<>();
+    final private List<Fiber<Void>> subscriberStrands = new ArrayList<>();
+    final private List<ReceivePort> processorChannels = new ArrayList<>();
     private Fiber<Void> dispatcherStrand;
     private IEmitter<E> emitter;
     private Channel<E>[] rrChannels;
@@ -60,6 +60,11 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
         this(eEmitter, null);
     }
 
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
 
     @Override
     public <I extends IFlowable<E>> I withMetricChannel(Channel<QMetric> metricChannel) {
@@ -341,6 +346,6 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
     @Override
     public void destroy() {
         subscriberStrands.stream().filter(Fiber::isAlive).forEach(s -> s.cancel(true));
-        processorChannels.forEach(ReceivePort::close);
+        processorChannels.stream().filter(s -> s != null && !s.isClosed()).forEach(ReceivePort::close);
     }
 }

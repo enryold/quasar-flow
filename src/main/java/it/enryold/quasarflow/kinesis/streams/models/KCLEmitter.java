@@ -5,6 +5,7 @@ import it.enryold.quasarflow.abstracts.AbstractEmitter;
 import it.enryold.quasarflow.interfaces.*;
 import it.enryold.quasarflow.models.QConsumer;
 import it.enryold.quasarflow.models.QProcessor;
+import it.enryold.quasarflow.models.utils.QRoutingKey;
 
 public class KCLEmitter extends AbstractEmitter<Record> {
 
@@ -25,11 +26,16 @@ public class KCLEmitter extends AbstractEmitter<Record> {
 
 
 
-    public <S extends IProcessor<Record>> S addProcessor(String partitionKey) {
-        return (S)new QProcessor<>(this, partitionKey);
+    public <S extends IProcessor<Record>> S addProcessor(QRoutingKey partitionKey) {
+        return (S)new QProcessor<>(this, null , partitionKey);
     }
 
-    public <S extends IProcessor<Record>> KCLEmitter addProcessor(String partitionKey, Injector<S> consumer) {
+    @Override
+    public <S extends IProcessor<Record>> S addProcessor(String name, QRoutingKey partitionKey) {
+        return (S)new QProcessor<>(this, name , partitionKey);
+    }
+
+    public <S extends IProcessor<Record>> KCLEmitter addProcessor(QRoutingKey partitionKey, Injector<S> consumer) {
         consumer.accept(addProcessor(partitionKey));
         return this;
     }

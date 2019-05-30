@@ -66,6 +66,7 @@ public class TestUtils {
         runtime.gc();
         // Calculate the used memory
         long memory = runtime.totalMemory() - runtime.freeMemory();
+        System.out.println("Max memory is: " + Runtime.getRuntime().maxMemory());
         System.out.println("Used memory is bytes: " + memory);
         System.out.println("Used memory is megabytes: "
                 + bytesToMegabytes(memory));

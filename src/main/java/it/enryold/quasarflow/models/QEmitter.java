@@ -2,6 +2,7 @@ package it.enryold.quasarflow.models;
 
 import it.enryold.quasarflow.abstracts.AbstractEmitter;
 import it.enryold.quasarflow.interfaces.*;
+import it.enryold.quasarflow.models.utils.QRoutingKey;
 
 
 public class QEmitter<T> extends AbstractEmitter<T> {
@@ -29,8 +30,13 @@ public class QEmitter<T> extends AbstractEmitter<T> {
 
 
     @Override
-    public <S extends IProcessor<T>> S addProcessor(String routingKey) {
-        return  (S)new QProcessor<>( this, routingKey);
+    public <S extends IProcessor<T>> S addProcessor(QRoutingKey routingKey) {
+        return  (S)new QProcessor<>( this, null, routingKey);
+    }
+
+    @Override
+    public <S extends IProcessor<T>> S addProcessor(String name, QRoutingKey routingKey) {
+        return  (S)new QProcessor<>( this, name, routingKey);
     }
 
     @Override

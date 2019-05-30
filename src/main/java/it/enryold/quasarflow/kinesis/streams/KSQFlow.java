@@ -4,6 +4,7 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibC
 import it.enryold.quasarflow.kinesis.streams.consumer.v1.RecordProcessorFactory;
 import it.enryold.quasarflow.kinesis.streams.models.KCLEmitter;
 import it.enryold.quasarflow.kinesis.streams.models.KCLFlow;
+import it.enryold.quasarflow.models.utils.QRoutingKey;
 
 import java.util.Optional;
 
@@ -25,7 +26,7 @@ public class KSQFlow {
     public KCLEmitter kinesisEmitter(RecordProcessorFactory recordProcessorFactory){
 
         KCLEmitter emitter = new KCLEmitter(flow)
-                .routedEmitter(o -> Optional.ofNullable(o.getPartitionKey()));
+                .routedEmitter(o -> QRoutingKey.withKey(o.getPartitionKey()));
 
         flow.setRecordProcessorFactory(recordProcessorFactory.withEmitterChannel(emitter.getChannel()));
         return emitter;
