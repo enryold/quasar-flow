@@ -16,6 +16,9 @@ public interface IEmitter<T> extends IFlowable<T> {
     <S extends IConsumer<T>> S addConsumer();
 
 
+    <E extends IEmitter<T>> E broadcast();
+    <E extends IEmitter<T>> E routed(IRoutingKeyExtractor<T> extractor);
+
 
     <S extends IProcessor<T>> IEmitter<T> addProcessor(Injector<S> processorInjector);
     <S extends IProcessor<T>> IEmitter<T> addProcessor(String routingKey, Injector<S> processorInjector);
