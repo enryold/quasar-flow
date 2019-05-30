@@ -55,7 +55,7 @@ public class ConsumerTests extends TestUtils {
         } catch (InterruptedException e) {
             fail();
         }finally {
-            currentFlow.destroy();
+            //currentFlow.destroy();
         }
 
 
@@ -94,7 +94,7 @@ public class ConsumerTests extends TestUtils {
         } catch (InterruptedException e) {
             fail();
         }finally {
-            currentFlow.destroy();
+            //currentFlow.destroy();
         }
 
 
@@ -134,7 +134,7 @@ public class ConsumerTests extends TestUtils {
         } catch (InterruptedException e) {
             fail();
         }finally {
-            currentFlow.destroy();
+            //currentFlow.destroy();
         }
 
 
@@ -176,7 +176,7 @@ public class ConsumerTests extends TestUtils {
         } catch (InterruptedException e) {
             fail();
         }finally {
-            currentFlow.destroy();
+            //currentFlow.destroy();
         }
 
 
@@ -220,7 +220,7 @@ public class ConsumerTests extends TestUtils {
         } catch (InterruptedException e) {
             fail();
         }finally {
-            currentFlow.destroy();
+            //currentFlow.destroy();
         }
 
 
@@ -261,7 +261,7 @@ public class ConsumerTests extends TestUtils {
         } catch (InterruptedException e) {
             fail();
         }finally {
-            currentFlow.destroy();
+            //currentFlow.destroy();
         }
 
 
@@ -305,7 +305,7 @@ public class ConsumerTests extends TestUtils {
         } catch (InterruptedException e) {
             fail();
         }finally {
-            currentFlow.destroy();
+            //currentFlow.destroy();
         }
 
 
@@ -347,7 +347,7 @@ public class ConsumerTests extends TestUtils {
         } catch (InterruptedException e) {
             fail();
         }finally {
-            currentFlow.destroy();
+            //currentFlow.destroy();
         }
 
 
@@ -392,7 +392,7 @@ public class ConsumerTests extends TestUtils {
         } catch (InterruptedException e) {
             fail();
         }finally {
-            currentFlow.destroy();
+            //currentFlow.destroy();
         }
 
 

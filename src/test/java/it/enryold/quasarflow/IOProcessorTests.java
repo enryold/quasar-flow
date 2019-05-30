@@ -99,7 +99,7 @@ public class IOProcessorTests extends TestUtils {
 
         assertEquals(results.size(), requests);
 
-        currentFlow.destroy();
+        //currentFlow.destroy();
 
     }
 }

@@ -72,7 +72,7 @@ public class MetricEmitterTests extends TestUtils {
         } catch (InterruptedException e) {
             fail();
         }finally {
-            currentFlow.destroy();
+            //currentFlow.destroy();
         }
 
 

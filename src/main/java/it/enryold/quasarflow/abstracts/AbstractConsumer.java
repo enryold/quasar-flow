@@ -36,8 +36,8 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
 
-    private List<Fiber<Void>> subscriberStrands = new ArrayList<>();
-    private List<ReceivePort> processorChannels = new ArrayList<>();
+    final private List<Fiber<Void>> subscriberStrands = new ArrayList<>();
+    final private List<ReceivePort> processorChannels = new ArrayList<>();
     private Fiber<Void> dispatcherStrand;
     private IEmitter<E> emitter;
     private Channel<E>[] rrChannels;

@@ -21,7 +21,7 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     protected Channel<T> emitterTaskChannel;
     private Fiber emitterTaskStrand;
     private Publisher<T> emitterTaskPublisher;
-    private Map<String, List<Channel<T>>> channels = new HashMap<>();
+    final private Map<String, List<Channel<T>>> channels = new HashMap<>();
     private Channel<QMetric> metricChannel;
     private IEmitterTask<T> task;
     private QSettings settings;

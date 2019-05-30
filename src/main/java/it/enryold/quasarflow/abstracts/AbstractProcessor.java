@@ -39,14 +39,14 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
 
-    protected List<Fiber<Void>> subscriberStrands = new ArrayList<>();
+    final protected List<Fiber<Void>> subscriberStrands = new ArrayList<>();
     protected Channel<QMetric> metricChannel;
     protected QSettings settings;
 
 
     private Fiber<Void> dispatcherStrand;
     private Channel<E>[] rrChannels;
-    private List<ReceivePort<E>> processorChannels = new ArrayList<>();
+    final private List<ReceivePort<E>> processorChannels = new ArrayList<>();
     private IEmitter<E> emitter;
     private String name;
     private QRoutingKey routingKey;
@@ -468,7 +468,7 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
     public void destroy() {
         if(dispatcherStrand != null){
             dispatcherStrand.cancel(true);
-            Stream.of(rrChannels).filter(s -> s != null && s != null && !s.isClosed()).forEach(SendPort::close);
+            Stream.of(rrChannels).filter(s -> s != null && !s.isClosed()).forEach(SendPort::close);
         }
 
         subscriberStrands.stream().filter(Fiber::isAlive).forEach(s -> s.cancel(true));

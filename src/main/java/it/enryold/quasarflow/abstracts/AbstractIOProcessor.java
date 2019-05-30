@@ -36,14 +36,14 @@ public abstract class AbstractIOProcessor<E, O> implements IOProcessor<E, O> {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
 
-    protected List<Fiber<Void>> subscriberStrands = new ArrayList<>();
+    final protected List<Fiber<Void>> subscriberStrands = new ArrayList<>();
     protected Channel<QMetric> metricChannel;
     protected QSettings settings;
 
 
     private Fiber<Void> dispatcherStrand;
     private Channel<E>[] rrChannels;
-    private List<ReceivePort<E>> processorChannels = new ArrayList<>();
+    final private List<ReceivePort<E>> processorChannels = new ArrayList<>();
     private IEmitter<E> emitter;
     private String name;
     private QRoutingKey routingKey;

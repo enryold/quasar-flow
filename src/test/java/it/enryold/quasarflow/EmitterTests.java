@@ -55,7 +55,7 @@ public class EmitterTests extends TestUtils {
         } catch (InterruptedException e) {
             fail();
         }finally {
-            currentFlow.destroy();
+            //currentFlow.destroy();
         }
 
 
@@ -91,7 +91,7 @@ public class EmitterTests extends TestUtils {
         } catch (InterruptedException e) {
             fail();
         }finally {
-            currentFlow.destroy();
+            //currentFlow.destroy();
         }
 
         try {
@@ -100,7 +100,7 @@ public class EmitterTests extends TestUtils {
         } catch (InterruptedException e) {
             fail();
         }finally {
-            currentFlow.destroy();
+            //currentFlow.destroy();
         }
 
 
@@ -148,7 +148,7 @@ public class EmitterTests extends TestUtils {
         } catch (InterruptedException e) {
             fail();
         }finally {
-            currentFlow.destroy();
+            //currentFlow.destroy();
         }
 
         try {
@@ -157,7 +157,7 @@ public class EmitterTests extends TestUtils {
         } catch (InterruptedException e) {
             fail();
         }finally {
-            currentFlow.destroy();
+            //currentFlow.destroy();
         }
 
 
