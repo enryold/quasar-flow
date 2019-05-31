@@ -43,7 +43,7 @@ public class ProcessorTests extends TestUtils {
 
         IFlow currentFlow = QuasarFlow.newFlow(QSettings.test())
                 .broadcastEmitter(stringEmitter)
-                .map(emitter -> new QProcessor<>(emitter).process(String::length))
+                .map(emitter -> new QProcessor<>(emitter).process(() -> String::length))
                 .addConsumer()
                 .consume(resultQueue::put)
                 .start();
@@ -121,7 +121,7 @@ public class ProcessorTests extends TestUtils {
         IFlow currentFlow = QuasarFlow.newFlow(QSettings.test())
                 .broadcastEmitter(stringEmitter)
                 .addProcessor()
-                .process(String::length)
+                .process(() -> String::length)
                 .addConsumer()
                 .consume(resultQueue::put)
                 .start();
@@ -192,7 +192,7 @@ public class ProcessorTests extends TestUtils {
         IFlow currentFlow = QuasarFlow.newFlow(QSettings.test())
                 .broadcastEmitter(stringEmitter)
                 .addProcessor()
-                .processWithFanIn(2, String::length)
+                .processWithFanIn(2, () -> String::length)
                 .addConsumer()
                 .consume(resultQueue::put)
                 .start();
@@ -453,7 +453,7 @@ public class ProcessorTests extends TestUtils {
         IFlow currentFlow = QuasarFlow.newFlow(QSettings.test())
                 .broadcastEmitter(stringEmitter)
                 .addProcessor()
-                .processWithFanOut(2, String::length)
+                .processWithFanOut(2, () -> String::length)
                 .cycle(emitter -> emitter.addConsumer().consume(resultQueue::put))
                 .start();
 
