@@ -2,9 +2,9 @@ package it.enryold.quasarflow;
 
 
 import it.enryold.quasarflow.components.IAccumulatorFactory;
-import it.enryold.quasarflow.interfaces.IEmitterTask;
-import it.enryold.quasarflow.interfaces.IFlow;
+import it.enryold.quasarflow.interfaces.*;
 import it.enryold.quasarflow.models.FlushedObject;
+import it.enryold.quasarflow.models.QProcessor;
 import it.enryold.quasarflow.models.StringAccumulator;
 import it.enryold.quasarflow.models.utils.QSettings;
 import org.junit.jupiter.api.AfterEach;
@@ -24,6 +24,44 @@ public class ProcessorTests extends TestUtils {
     public void afterEach(){
 
         this.printRuntime();
+    }
+
+
+    @Test
+    public void testSingleProcessorInjected() {
+
+        // PARAMS
+        int elements = 19;
+        int flushSeconds = 1;
+
+        // EMITTER
+        IEmitterTask<String> stringEmitter = stringsEmitterTask(elements);
+
+        // OUTPUT CHANNEL
+        LinkedTransferQueue<Integer> resultQueue = resultQueue();
+
+
+        IFlow currentFlow = QuasarFlow.newFlow(QSettings.test())
+                .broadcastEmitter(stringEmitter)
+                .addFlow(emitter -> new QProcessor<>(emitter).process(String::length))
+                .addConsumer()
+                .consume(resultQueue::put)
+                .start();
+
+
+
+        List<Integer> results = null;
+        try {
+            results = getResults(resultQueue, elements, flushSeconds, TimeUnit.SECONDS);
+            assertEquals(results.size(), elements, "Elements are:" + results.size() + " expected " + elements);
+        } catch (InterruptedException e) {
+            fail();
+        }finally {
+            //currentFlow.destroy();
+        }
+
+
+
     }
 
 
