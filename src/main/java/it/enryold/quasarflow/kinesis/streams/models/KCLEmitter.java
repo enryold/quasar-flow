@@ -35,10 +35,6 @@ public class KCLEmitter extends AbstractEmitter<Record> {
         return (S)new QProcessor<>(this, name , partitionKey);
     }
 
-    public <S extends IProcessor<Record>> KCLEmitter addProcessor(QRoutingKey partitionKey, Injector<S> consumer) {
-        consumer.accept(addProcessor(partitionKey));
-        return this;
-    }
 
     @Override
     public <S extends IConsumer<Record>> S addConsumer() {
@@ -63,8 +59,5 @@ public class KCLEmitter extends AbstractEmitter<Record> {
         throw new RuntimeException("Please use addProcessor(String partitionKey)");
     }
 
-    @Override
-    public <S extends IProcessor<Record>> IEmitter<Record> addProcessor(Injector<S> consumer) {
-        throw new RuntimeException("Please use addProcessor(QConsumer<S> consumer, String partitionKey)");
-    }
+
 }
