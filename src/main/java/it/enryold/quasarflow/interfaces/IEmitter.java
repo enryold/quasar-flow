@@ -7,41 +7,48 @@ import org.reactivestreams.Publisher;
 public interface IEmitter<T> extends IFlowable<T> {
 
 
+
+
+    // Methods for concrete classes.
     <EM extends IEmitter<T>> EM currentInstance();
-
-    <E extends IEmitter<T>> E broadcastEmitter(IEmitterTask<T> task);
-    <E extends IEmitter<T>> E routedEmitter(IEmitterTask<T> task, IRoutingKeyExtractor<T> extractorFactory);
-
     <S extends IProcessor<T>> S addProcessor();
-    <S extends IProcessor<T>> S addProcessor(QRoutingKey routingKey);
-    <S extends IProcessor<T>> S addProcessor(String name, QRoutingKey routingKey);
     <S extends IConsumer<T>> S addConsumer();
 
 
+
+    // Abstracts
+
+    // Flow
+    IEmitter<T> consume(InjectorConsumer<T> injector);
+
+    // Emitter
+    <S> IEmitter<S> map(InjectorEmitter<T, S> injector);
+
+    <E extends IEmitter<T>> E broadcastEmitter(IEmitterTask<T> task);
+    <E extends IEmitter<T>> E routedEmitter(IEmitterTask<T> task, IRoutingKeyExtractor<T> extractorFactory);
     <E extends IEmitter<T>> E broadcast();
     <E extends IEmitter<T>> E routed(IRoutingKeyExtractor<T> extractor);
 
 
+    // Processor
     <S extends IProcessor<T>> S addProcessor(String name);
-    <S extends IProcessor<T>> IEmitter<T> addProcessor(Injector<S> processorInjector);
-    <S extends IProcessor<T>> IEmitter<T> addProcessor(QRoutingKey routingKey, Injector<S> processorInjector);
+    <S extends IProcessor<T>> S addProcessor(QRoutingKey routingKey);
+    <S extends IProcessor<T>> S addProcessor(String name, QRoutingKey routingKey);
 
-    <S> IEmitter<S> addFlow(IFlowInjector<T, S> flowInjector);
+    IEmitter<T> addProcessor(Injector<IProcessor<T>> processorInjector);
+    IEmitter<T> addProcessor(String name, Injector<IProcessor<T>> processorInjector);
+    IEmitter<T> addProcessor(QRoutingKey routingKey, Injector<IProcessor<T>> processorInjector);
+    IEmitter<T> addProcessor(String name, QRoutingKey routingKey, Injector<IProcessor<T>> processorInjector);
 
-    <S extends IProcessor<T>> S useProcessor(IEmitterInjector<T, S> emitterInjector);
-    <S extends IProcessor<T>> IEmitter<T> useProcessor(IEmitterInjector<T, S> emitterInjector, Injector<S> processorInjector);
-
-    <O> IOProcessor<T, O> ioProcessor(IEmitterInjector<T, IOProcessor<T, O>> emitterInjector);
-    <O> IEmitter<O> ioProcessor(IEmitterInjector<T, IOProcessor<T, O>> emitterInjector, IOProcessorInjector<T, O, IEmitter<O>> processorInjector);
-
-
-
-    <S extends IConsumer<T>> IEmitter<T> addConsumer(Injector<S> processorInjector);
+    // Consumer
     <S extends IConsumer<T>> S addConsumer(String name);
-    <S extends IConsumer<T>> S useConsumer(IEmitterInjector<T, S> emitterInjector);
-    <S extends IConsumer<T>> IEmitter<T> useConsumer(IEmitterInjector<T, S> emitterInjector, Injector<S> processorInjector);
+
+    IEmitter<T> addConsumer(Injector<IConsumer<T>> consumerInjector);
+    IEmitter<T> addConsumer(String name, Injector<IConsumer<T>> consumerInjector);
 
 
+
+    // Utils
     Channel<T> getChannel();
     Publisher<T> getPublisher();
     Publisher<T> getPublisher(QRoutingKey routingKey);

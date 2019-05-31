@@ -3,6 +3,7 @@ package it.enryold.quasarflow;
 
 import it.enryold.quasarflow.components.IAccumulatorFactory;
 import it.enryold.quasarflow.interfaces.*;
+import it.enryold.quasarflow.models.QConsumer;
 import it.enryold.quasarflow.models.QEmitter;
 import it.enryold.quasarflow.models.StringAccumulator;
 import it.enryold.quasarflow.models.utils.QMetric;
@@ -47,16 +48,16 @@ public class MetricEmitterTests extends TestUtils {
 
         IEmitter<QMetric> metricEmitter = MetricFlow.newFlow()
                 .metricEmitter()
-                .addConsumer(c -> c.consumeWithSizeBatching(
-                        100,
-                        50,
-                        TimeUnit.MILLISECONDS,
-                        elm -> {
-                            elm.stream().collect(Collectors.groupingBy(QMetric::getComponentName, Collectors.counting()))
-                                    .forEach((k,v) -> System.out.println("Received "+k+" "+v+" times"));
-                        }));
+                .consume(emitter -> new QConsumer<>(emitter)
+                        .consumeWithSizeBatching(
+                                100,
+                                50,
+                                TimeUnit.MILLISECONDS,
+                                elm -> {
+                                    elm.stream().collect(Collectors.groupingBy(QMetric::getComponentName, Collectors.counting()))
+                                            .forEach((k,v) -> System.out.println("Received "+k+" "+v+" times"));
+                                }));
 
-        metricEmitter.flow().start();
 
         IFlow currentFlow = QuasarFlow.newFlow(QSettings.test(), metricEmitter.getChannel())
                 .broadcastEmitter(stringEmitter)

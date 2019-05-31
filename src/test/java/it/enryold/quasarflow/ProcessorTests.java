@@ -43,7 +43,7 @@ public class ProcessorTests extends TestUtils {
 
         IFlow currentFlow = QuasarFlow.newFlow(QSettings.test())
                 .broadcastEmitter(stringEmitter)
-                .addFlow(emitter -> new QProcessor<>(emitter).process(String::length))
+                .map(emitter -> new QProcessor<>(emitter).process(String::length))
                 .addConsumer()
                 .consume(resultQueue::put)
                 .start();

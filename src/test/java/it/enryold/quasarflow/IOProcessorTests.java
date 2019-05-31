@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
+import it.enryold.quasarflow.interfaces.IEmitter;
 import it.enryold.quasarflow.interfaces.IEmitterTask;
 import it.enryold.quasarflow.interfaces.IFlow;
+import it.enryold.quasarflow.interfaces.InjectorEmitter;
 import it.enryold.quasarflow.io.http.HTTPProcessor;
 import it.enryold.quasarflow.io.http.models.QHTTPRequest;
 import it.enryold.quasarflow.io.http.models.QHTTPResponse;
@@ -77,8 +79,8 @@ public class IOProcessorTests extends TestUtils {
 
         IFlow currentFlow = QuasarFlow.newFlow()
                 .broadcastEmitter(requestTask)
-                .ioProcessor(emitter -> new HTTPProcessor<>(emitter))
-                .processWithFanIn(fibers)
+                .map(emitter -> new HTTPProcessor<>(emitter)
+                        .processWithFanIn(fibers))
                 .addConsumer()
                 .consume(responseQueue::add)
                 .start();
