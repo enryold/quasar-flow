@@ -101,7 +101,6 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
 
 
 
-
     protected  <T>ReceivePort<T> buildProcessor(Publisher<E> publisher, ITransformFactory<E, T> transformFactory)
     {
         final ITransform<E, T> transform = transformFactory.build();

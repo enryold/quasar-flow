@@ -4,6 +4,8 @@ import it.enryold.quasarflow.abstracts.AbstractEmitter;
 import it.enryold.quasarflow.interfaces.*;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
 
+import java.util.List;
+
 
 public class QEmitter<T> extends AbstractEmitter<T> {
 
@@ -26,6 +28,12 @@ public class QEmitter<T> extends AbstractEmitter<T> {
     @Override
     public <S extends IProcessor<T>> S addProcessor() {
         return  (S)new QProcessor<>(this);
+    }
+
+    @Override
+    public <O> IFlatProcessor<O> addFlatProcessor() {
+        IEmitter<List<O>> uncheckedCast = (IEmitter<List<O>>) this;
+        return new QFlatProcessor<>(uncheckedCast);
     }
 
 
