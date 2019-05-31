@@ -4,8 +4,11 @@ import com.amazonaws.services.kinesis.model.Record;
 import it.enryold.quasarflow.abstracts.AbstractEmitter;
 import it.enryold.quasarflow.interfaces.*;
 import it.enryold.quasarflow.models.QConsumer;
+import it.enryold.quasarflow.models.QFlatProcessor;
 import it.enryold.quasarflow.models.QProcessor;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
+
+import java.util.List;
 
 public class KCLEmitter extends AbstractEmitter<Record> {
 
@@ -57,6 +60,11 @@ public class KCLEmitter extends AbstractEmitter<Record> {
     @Override
     public <S extends IProcessor<Record>> S addProcessor() {
         throw new RuntimeException("Please use addProcessor(String partitionKey)");
+    }
+
+    @Override
+    public <O> IFlatProcessor<O> addFlatProcessor() {
+        throw new RuntimeException("Cannot add flatProcessor on this emitter");
     }
 
 

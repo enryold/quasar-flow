@@ -254,6 +254,51 @@ public class ProcessorTests extends TestUtils {
     }
 
 
+    @Test
+    public void testSizeBatchingFlatFanIn_CASE_FLUSH_AFTER_TIME_PERIOD_MULTI_WORKER() {
+
+        // PARAMS
+        int elements = 39;
+        int batchSize = 20;
+        int workers = 2;
+        int flushSeconds = 1;
+        TimeUnit timeUnit = TimeUnit.SECONDS;
+
+        // EMITTER
+        IEmitterTask<String> stringEmitter = stringsEmitterTask(elements);
+
+        // OUTPUT CHANNEL
+        LinkedTransferQueue<String> resultQueue = resultQueue();
+
+
+
+        IFlow currentFlow = QuasarFlow.newFlow(QSettings.test())
+                .broadcastEmitter(stringEmitter)
+                .addProcessor()
+                .processWithFanInAndSizeBatching(
+                        workers, batchSize, flushSeconds, timeUnit)
+                .<String>addFlatProcessor()
+                .processWithFanIn(8)
+                .addConsumer()
+                .consume(resultQueue::put)
+                .start();
+
+
+        List<String> results;
+        try {
+            results = getResults(resultQueue, 39, flushSeconds+1, TimeUnit.SECONDS);
+            assertEquals(results.size(), 39, "Elements are:" + results.size() + " expected " + 2);
+        } catch (InterruptedException e) {
+            fail();
+        }finally {
+            //currentFlow.destroy();
+        }
+
+
+
+    }
+
+
 
     @Test
     public void testSizeBatchingFanIn_CASE_FLUSH_BEFORE_TIME_PERIOD_MULTI_WORKER() {

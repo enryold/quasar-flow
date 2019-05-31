@@ -12,6 +12,7 @@ public interface IEmitter<T> extends IFlowable<T> {
     // Methods for concrete classes.
     <EM extends IEmitter<T>> EM currentInstance();
     <S extends IProcessor<T>> S addProcessor();
+    <O> IFlatProcessor<O> addFlatProcessor();
     <S extends IConsumer<T>> S addConsumer();
 
 
@@ -39,6 +40,7 @@ public interface IEmitter<T> extends IFlowable<T> {
     IEmitter<T> addProcessor(String name, Injector<IProcessor<T>> processorInjector);
     IEmitter<T> addProcessor(QRoutingKey routingKey, Injector<IProcessor<T>> processorInjector);
     IEmitter<T> addProcessor(String name, QRoutingKey routingKey, Injector<IProcessor<T>> processorInjector);
+
 
     // Consumer
     <S extends IConsumer<T>> S addConsumer(String name);

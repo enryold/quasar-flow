@@ -9,7 +9,6 @@ public interface IProcessor<I> extends IFlowable<I> {
 
 
 
-
     <EM extends IEmitter<I>> EM process();
 
 
