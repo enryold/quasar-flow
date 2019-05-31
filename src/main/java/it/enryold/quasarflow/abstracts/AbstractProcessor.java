@@ -102,8 +102,10 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
 
 
 
-    protected  <T>ReceivePort<T> buildProcessor(Publisher<E> publisher, ITransform<E, T> transform)
+    protected  <T>ReceivePort<T> buildProcessor(Publisher<E> publisher, ITransformFactory<E, T> transformFactory)
     {
+        final ITransform<E, T> transform = transformFactory.build();
+
         Processor<E, T> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<T>>) (in, out) -> {
             for (; ; ) {
                 E x = in.receive();
@@ -325,8 +327,8 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
     }
 
 
-    public <T, EM extends IEmitter<T>> EM process(ITransform<E, T> transform){
-        ReceivePort<T> processor = this.buildProcessor(emitter.getPublisher(routingKey), transform);
+    public <T, EM extends IEmitter<T>> EM process(ITransformFactory<E, T> transformFactory){
+        ReceivePort<T> processor = this.buildProcessor(emitter.getPublisher(routingKey), transformFactory);
         this.registerProcessorChannel(processor);
         return (EM)new QEmitter<T>(flow).broadcastEmitter(buildEmitterTask(processor));
     }
@@ -347,12 +349,11 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
     }
 
 
-    public <T> IEmitterList<T> processWithFanOut(int workers,
-                                                                  ITransform<E, T> transform)
+    public <T> IEmitterList<T> processWithFanOut(int workers, ITransformFactory<E, T> transformFactory)
     {
         List<IEmitter<T>> emitters = buildRRDispatcher(emitter, workers)
                 .stream()
-                .map(p -> buildProcessor(p, transform))
+                .map(p -> buildProcessor(p, transformFactory))
                 .peek(this::registerProcessorChannel)
                 .map(this::buildEmitterTask)
                 .map(task -> new QEmitter<T>(flow).broadcastEmitter(task))
@@ -415,10 +416,10 @@ public abstract class AbstractProcessor<E> implements IProcessor<E> {
 
 
     public <T, EM extends IEmitter<T>> EM processWithFanIn(int workers,
-                                                           ITransform<E, T> transform){
+                                                           ITransformFactory<E, T> transformFactory){
         List<ReceivePort<T>> channels = buildRRDispatcher(emitter, workers)
                 .stream()
-                .map(p -> buildProcessor(p, transform))
+                .map(p -> buildProcessor(p, transformFactory))
                 .peek(this::registerProcessorChannel)
                 .collect(Collectors.toList());
 

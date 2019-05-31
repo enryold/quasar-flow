@@ -13,13 +13,13 @@ public interface IProcessor<I> extends IFlowable<I> {
     <EM extends IEmitter<I>> EM process();
 
 
-    <T, EM extends IEmitter<T>> EM process(ITransform<I, T> transform);
+    <T, EM extends IEmitter<T>> EM process(ITransformFactory<I, T> transformFactory);
 
 
     IEmitterList<I> processWithFanOut(int workers);
 
 
-    <T> IEmitterList<T> processWithFanOut(int workers, ITransform<I, T> transform);
+    <T> IEmitterList<T> processWithFanOut(int workers, ITransformFactory<I, T> transformFactory);
 
     IEmitterList<List<I>> processWithFanOutAndSizeBatching(
             int workers,
@@ -38,7 +38,7 @@ public interface IProcessor<I> extends IFlowable<I> {
 
 
     <T, EM extends IEmitter<T>> EM processWithFanIn(int workers,
-                                                    ITransform<I, T> transform);
+                                                    ITransformFactory<I, T> transformFactory);
 
     <EM extends IEmitter<List<I>>> EM processWithFanInAndSizeBatching(
             int workers,
