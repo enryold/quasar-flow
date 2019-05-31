@@ -120,6 +120,11 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     }
 
     @Override
+    public <S> IEmitter<S> addFlow(IFlowInjector<T, S> flowInjector){
+        return flowInjector.inject(currentInstance());
+    }
+
+    @Override
     public <S extends IProcessor<T>> IEmitter<T> useProcessor(IEmitterInjector<T, S> emitterInjector, Injector<S> processorInjector){
         IEmitter<T> emitter = currentInstance();
         processorInjector.accept(emitterInjector.inject(emitter));

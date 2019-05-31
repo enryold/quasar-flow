@@ -26,6 +26,7 @@ public interface IEmitter<T> extends IFlowable<T> {
     <S extends IProcessor<T>> IEmitter<T> addProcessor(Injector<S> processorInjector);
     <S extends IProcessor<T>> IEmitter<T> addProcessor(QRoutingKey routingKey, Injector<S> processorInjector);
 
+    <S> IEmitter<S> addFlow(IFlowInjector<T, S> flowInjector);
 
     <S extends IProcessor<T>> S useProcessor(IEmitterInjector<T, S> emitterInjector);
     <S extends IProcessor<T>> IEmitter<T> useProcessor(IEmitterInjector<T, S> emitterInjector, Injector<S> processorInjector);

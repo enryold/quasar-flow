@@ -1,7 +1,7 @@
 package it.enryold.quasarflow.interfaces;
 
 @FunctionalInterface
-public interface IFlowInjector<O extends IFlowable> {
+public interface IFlowInjector<T, O> {
 
-    O inject(IFlow flow);
+    IEmitter<O> inject(IEmitter<T> emitter);
 }
