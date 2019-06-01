@@ -1,11 +1,13 @@
 package it.enryold.quasarflow.kinesis.streams.models;
 
+import co.paralleluniverse.strands.channels.Channel;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorFactory;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
 import it.enryold.quasarflow.abstracts.AbstractFlow;
 import it.enryold.quasarflow.interfaces.IFlow;
 import it.enryold.quasarflow.kinesis.streams.consumer.v1.RecordProcessorFactory;
+import it.enryold.quasarflow.models.utils.QMetric;
 import it.enryold.quasarflow.models.utils.QSettings;
 
 
@@ -18,8 +20,8 @@ public class KCLFlow extends AbstractFlow {
 
     public KCLFlow(
                    KinesisClientLibConfiguration kinesisClientLibConfiguration,
-                   QSettings settings){
-        super(settings);
+                   QSettings settings,  Channel<QMetric> metricChannel){
+        super(settings, metricChannel);
         this.kinesisClientLibConfiguration = kinesisClientLibConfiguration;
 
     }
