@@ -1,4 +1,4 @@
-package it.enryold.quasarflow.models.utils;
+package it.enryold.quasarflow.models.metrics;
 
 
 import java.util.Date;
@@ -8,12 +8,14 @@ public class QMetric {
     private String flowName;
     private String componentName;
     private String metricName;
+    private Long value;
     private long creation;
 
     private QMetric(Builder builder) {
         flowName = builder.flowName;
         componentName = builder.componentName;
         metricName = builder.metricName;
+        value = builder.value;
         creation = new Date().getTime();
     }
 
@@ -33,6 +35,15 @@ public class QMetric {
         return creation;
     }
 
+    public Long getValue() {
+        return value;
+    }
+
+    public void setValue(Long value) {
+        this.value = value;
+    }
+
+
     public static Builder Builder() {
         return new Builder();
     }
@@ -42,6 +53,8 @@ public class QMetric {
         private String flowName;
         private String componentName;
         private String metricName;
+        private Long value;
+
 
         private Builder() {
         }
@@ -58,6 +71,11 @@ public class QMetric {
 
         public Builder withMetricName(String val) {
             metricName = val;
+            return this;
+        }
+
+        public Builder withValue(Long val) {
+            value = val;
             return this;
         }
 

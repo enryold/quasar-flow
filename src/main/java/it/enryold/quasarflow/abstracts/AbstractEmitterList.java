@@ -19,6 +19,10 @@ public abstract class AbstractEmitterList<T> implements IEmitterList<T> {
         this.name = name;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public AbstractEmitterList(List<IEmitter<T>> emitters){
         for(IEmitter<T> e : emitters){
             if(flow == null){ flow = e.flow(); }

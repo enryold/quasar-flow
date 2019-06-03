@@ -7,8 +7,8 @@ import co.paralleluniverse.strands.channels.*;
 import co.paralleluniverse.strands.channels.reactivestreams.ReactiveStreams;
 import it.enryold.quasarflow.enums.QMetricType;
 import it.enryold.quasarflow.interfaces.*;
-import it.enryold.quasarflow.models.utils.FnBuildMetric;
-import it.enryold.quasarflow.models.utils.QMetric;
+import it.enryold.quasarflow.models.metrics.FnBuildMetric;
+import it.enryold.quasarflow.models.metrics.QMetric;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
 import it.enryold.quasarflow.models.utils.QSettings;
 import org.reactivestreams.Publisher;
@@ -49,6 +49,11 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     }
 
     @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
     public <I extends IFlowable<T>> I withMetricChannel(Channel<QMetric> metricChannel) {
         this.metricChannel = metricChannel;
         return (I)this;
@@ -69,9 +74,10 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
         emitterTaskChannel = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
         emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> { if(task != null){
             if(metricChannel != null){
-                metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.PRODUCED.name()));
+                metricChannel.send(new FnBuildMetric().create(this, QMetricType.PRODUCED.name(), 1L));
             }
-            task.emit(emitterTaskChannel); }
+            task.emit(emitterTaskChannel);
+        }
         });
         emitterTaskPublisher = ReactiveStreams.toPublisher(emitterTaskChannel);
         return (E)this;
@@ -84,7 +90,7 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
         emitterTaskChannel = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
         emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> { if(task != null){
             if(metricChannel != null){
-                metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.PRODUCED.name()));
+                metricChannel.send(new FnBuildMetric().create(this, QMetricType.PRODUCED.name(), 1L));
             }
             task.emit(emitterTaskChannel);
         } });

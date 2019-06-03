@@ -3,7 +3,7 @@ package it.enryold.quasarflow.abstracts;
 import co.paralleluniverse.strands.channels.Channel;
 import it.enryold.quasarflow.interfaces.IFlow;
 import it.enryold.quasarflow.interfaces.IFlowable;
-import it.enryold.quasarflow.models.utils.QMetric;
+import it.enryold.quasarflow.models.metrics.QMetric;
 import it.enryold.quasarflow.models.utils.QSettings;
 
 import java.util.ArrayList;

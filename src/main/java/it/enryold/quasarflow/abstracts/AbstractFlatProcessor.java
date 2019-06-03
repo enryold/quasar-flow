@@ -14,8 +14,8 @@ import it.enryold.quasarflow.enums.QMetricType;
 import it.enryold.quasarflow.interfaces.*;
 import it.enryold.quasarflow.models.QEmitter;
 import it.enryold.quasarflow.models.QEmitterList;
-import it.enryold.quasarflow.models.utils.FnBuildMetric;
-import it.enryold.quasarflow.models.utils.QMetric;
+import it.enryold.quasarflow.models.metrics.FnBuildMetric;
+import it.enryold.quasarflow.models.metrics.QMetric;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
 import it.enryold.quasarflow.models.utils.QSettings;
 import org.reactivestreams.Processor;
@@ -74,6 +74,11 @@ public abstract class AbstractFlatProcessor<E> implements IFlatProcessor<E> {
     }
 
     @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
     public <I extends IFlowable<E>> I withMetricChannel(Channel<QMetric> metricChannel) {
         this.metricChannel = metricChannel;
         return (I)this;
@@ -107,7 +112,7 @@ public abstract class AbstractFlatProcessor<E> implements IFlatProcessor<E> {
                 if (xs == null)
                     break;
                 if(metricChannel != null) {
-                    metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.RECEIVED.name()));
+                    metricChannel.send(new FnBuildMetric().create(this, QMetricType.RECEIVED.name(), 1L));
                 }
 
                 for(E x : xs){
@@ -184,7 +189,7 @@ public abstract class AbstractFlatProcessor<E> implements IFlatProcessor<E> {
                     if (x == null)
                         break;
                     if(metricChannel != null) {
-                        metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.PRODUCED.name()));
+                        metricChannel.send(new FnBuildMetric().create(this, QMetricType.PRODUCED.name(), 1L));
                     }
                     publisherChannel.send(x);
                 } catch (InterruptedException e) {

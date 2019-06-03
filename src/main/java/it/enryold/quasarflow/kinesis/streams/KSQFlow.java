@@ -5,11 +5,9 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibC
 import it.enryold.quasarflow.kinesis.streams.consumer.v1.RecordProcessorFactory;
 import it.enryold.quasarflow.kinesis.streams.models.KCLEmitter;
 import it.enryold.quasarflow.kinesis.streams.models.KCLFlow;
-import it.enryold.quasarflow.models.utils.QMetric;
+import it.enryold.quasarflow.models.metrics.QMetric;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
 import it.enryold.quasarflow.models.utils.QSettings;
-
-import java.util.Optional;
 
 public class KSQFlow {
 
