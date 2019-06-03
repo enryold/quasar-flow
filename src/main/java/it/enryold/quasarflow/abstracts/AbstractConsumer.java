@@ -14,8 +14,8 @@ import it.enryold.quasarflow.components.IAccumulator;
 import it.enryold.quasarflow.components.IAccumulatorFactory;
 import it.enryold.quasarflow.enums.QMetricType;
 import it.enryold.quasarflow.interfaces.*;
-import it.enryold.quasarflow.models.utils.FnBuildMetric;
-import it.enryold.quasarflow.models.utils.QMetric;
+import it.enryold.quasarflow.models.metrics.FnBuildMetric;
+import it.enryold.quasarflow.models.metrics.QMetric;
 import it.enryold.quasarflow.models.utils.QSettings;
 import org.reactivestreams.Processor;
 import org.reactivestreams.Publisher;
@@ -67,6 +67,11 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
     }
 
     @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
     public <I extends IFlowable<E>> I withMetricChannel(Channel<QMetric> metricChannel) {
         this.metricChannel = metricChannel;
         return (I)this;
@@ -99,7 +104,7 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
                     break;
 
                 if(metricChannel != null) {
-                    metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.RECEIVED.name()));
+                    metricChannel.send(new FnBuildMetric().create(this, QMetricType.RECEIVED.name(), 1L));
                 }
                 out.send(x);
             }
@@ -169,7 +174,7 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
 
                 if(collection.size() > 0){
                     if(metricChannel != null) {
-                        metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.RECEIVED.name()));
+                        metricChannel.send(new FnBuildMetric().create(this, QMetricType.RECEIVED.name(), 1L));
                     }
                     out.send(new ArrayList<>(collection));
                 }
@@ -221,7 +226,7 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
                 if(accumulator.getRecords().size() > 0){
                     out.send(new ArrayList<>(accumulator.getRecords()));
                     if(metricChannel != null) {
-                        metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.RECEIVED.name()));
+                        metricChannel.send(new FnBuildMetric().create(this, QMetricType.RECEIVED.name(), 1L));
                     }
                 }
 
@@ -247,7 +252,7 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
                         break;
 
                     if(metricChannel != null) {
-                        metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.PRODUCED.name()));
+                        metricChannel.send(new FnBuildMetric().create(this, QMetricType.PRODUCED.name(), 1L));
                     }
                     ingestionTask.ingest(x);
 

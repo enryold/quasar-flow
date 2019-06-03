@@ -14,8 +14,8 @@ import it.enryold.quasarflow.enums.QMetricType;
 import it.enryold.quasarflow.interfaces.*;
 import it.enryold.quasarflow.models.QEmitter;
 import it.enryold.quasarflow.models.QEmitterList;
-import it.enryold.quasarflow.models.utils.FnBuildMetric;
-import it.enryold.quasarflow.models.utils.QMetric;
+import it.enryold.quasarflow.models.metrics.FnBuildMetric;
+import it.enryold.quasarflow.models.metrics.QMetric;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
 import it.enryold.quasarflow.models.utils.QSettings;
 import org.reactivestreams.Processor;
@@ -75,6 +75,11 @@ public abstract class AbstractIOProcessor<E, O> implements IOProcessor<E, O> {
     }
 
     @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
     public IOProcessor<E, O> withAsyncTaskBuilder(IOProcessorAsyncTaskBuilder<E, O> processorAsyncTaskBuilder) {
         this.processorAsyncTaskBuilder = processorAsyncTaskBuilder;
         return this;
@@ -114,7 +119,7 @@ public abstract class AbstractIOProcessor<E, O> implements IOProcessor<E, O> {
                 if (x == null)
                     break;
                 if(metricChannel != null) {
-                    metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.RECEIVED.name()));
+                    metricChannel.send(new FnBuildMetric().create(this, QMetricType.RECEIVED.name(), 1L));
                 }
                 processorAsyncTask.async(x, out);
             }
@@ -188,7 +193,7 @@ public abstract class AbstractIOProcessor<E, O> implements IOProcessor<E, O> {
                     if (x == null)
                         break;
                     if(metricChannel != null) {
-                        metricChannel.trySend(new FnBuildMetric().apply(this, QMetricType.PRODUCED.name()));
+                        metricChannel.send(new FnBuildMetric().create(this, QMetricType.PRODUCED.name(), 1L));
                     }
                     publisherChannel.send(x);
                 } catch (InterruptedException e) {

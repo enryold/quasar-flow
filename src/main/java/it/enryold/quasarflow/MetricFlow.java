@@ -3,7 +3,7 @@ package it.enryold.quasarflow;
 import it.enryold.quasarflow.interfaces.IRoutingKeyExtractor;
 import it.enryold.quasarflow.models.QEmitter;
 import it.enryold.quasarflow.models.QFlow;
-import it.enryold.quasarflow.models.utils.QMetric;
+import it.enryold.quasarflow.models.metrics.QMetric;
 import it.enryold.quasarflow.models.utils.QSettings;
 
 public class MetricFlow {

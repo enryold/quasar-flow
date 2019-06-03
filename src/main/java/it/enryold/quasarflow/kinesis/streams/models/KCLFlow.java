@@ -7,7 +7,7 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
 import it.enryold.quasarflow.abstracts.AbstractFlow;
 import it.enryold.quasarflow.interfaces.IFlow;
 import it.enryold.quasarflow.kinesis.streams.consumer.v1.RecordProcessorFactory;
-import it.enryold.quasarflow.models.utils.QMetric;
+import it.enryold.quasarflow.models.metrics.QMetric;
 import it.enryold.quasarflow.models.utils.QSettings;
 
 

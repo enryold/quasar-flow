@@ -1,12 +1,13 @@
 package it.enryold.quasarflow;
 
 
+import it.enryold.quasarflow.components.IAccumulator;
 import it.enryold.quasarflow.components.IAccumulatorFactory;
 import it.enryold.quasarflow.interfaces.*;
 import it.enryold.quasarflow.models.QConsumer;
-import it.enryold.quasarflow.models.QEmitter;
-import it.enryold.quasarflow.models.StringAccumulator;
-import it.enryold.quasarflow.models.utils.QMetric;
+import it.enryold.quasarflow.models.metrics.QMetric;
+import it.enryold.quasarflow.models.metrics.QMetricAccumulator;
+import it.enryold.quasarflow.models.metrics.QMetricSummary;
 import it.enryold.quasarflow.models.utils.QSettings;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -49,19 +50,19 @@ public class MetricEmitterTests extends TestUtils {
         IEmitter<QMetric> metricEmitter = MetricFlow.newFlow()
                 .metricEmitter()
                 .consume(emitter -> new QConsumer<>(emitter)
-                        .consumeWithSizeBatching(
-                                100,
+                        .consumeWithByteBatching(
+                                () -> new QMetricAccumulator(1_000_000),
                                 50,
-                                TimeUnit.MILLISECONDS,
-                                elm -> {
-                                    elm.stream().collect(Collectors.groupingBy(QMetric::getComponentName, Collectors.counting()))
-                                            .forEach((k,v) -> System.out.println("Received "+k+" "+v+" times"));
+                                TimeUnit.MILLISECONDS, elms -> {
+                                    new QMetricSummary(elms).printSummary(System.out::println);
                                 }));
+
+        metricEmitter.flow().start();
 
 
         IFlow currentFlow = QuasarFlow.newFlow(QSettings.test(), metricEmitter.getChannel())
-                .broadcastEmitter(stringEmitter)
-                .addConsumer()
+                .broadcastEmitter(stringEmitter, "stringEmitter")
+                .addConsumer("stringConsumer")
                 .consume(resultQueue::put)
                 .start();
 
