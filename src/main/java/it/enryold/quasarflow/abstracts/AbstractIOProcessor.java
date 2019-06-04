@@ -114,7 +114,6 @@ public abstract class AbstractIOProcessor<E, O> extends AbstractFlowable<E> impl
 
     private ReceivePort<O> buildProcessor(Publisher<E> publisher)
     {
-        final IOProcessorAsyncTask<E, O> processorAsyncTask = processorAsyncTaskBuilder.build();
         final Processor<E, O> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<O>>) (in, out) -> {
             for (; ; ) {
                 E x = in.receive();
@@ -123,7 +122,7 @@ public abstract class AbstractIOProcessor<E, O> extends AbstractFlowable<E> impl
                 if(metricChannel != null) {
                     metricChannel.send(new FnBuildMetric().create(this, QMetricType.RECEIVED.name(), 1L));
                 }
-                processorAsyncTask.async(x, out);
+                processorAsyncTaskBuilder.build().async(x, out);
             }
         });
         publisher.subscribe(processor);

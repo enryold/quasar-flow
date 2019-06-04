@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class IOProcessorTests extends TestUtils {
 
-  
+
 
     @AfterEach
     public void afterEach(){
@@ -93,7 +93,7 @@ public class IOProcessorTests extends TestUtils {
                 .start();
 
 
-        List<OkHttpResponse<String>> results = this.getResults(responseQueue, requests, 3, TimeUnit.SECONDS);
+        List<OkHttpResponse<String>> results = this.getResults(responseQueue, requests, 5, TimeUnit.SECONDS);
 
         System.out.println("ASYNC: Executed "+requests+" requests in parallel ("+fibers+" fibers) in: "+(System.currentTimeMillis()-startTime)+" ms");
         System.out.println("ASYNC: Requests summed execution time: "+results.stream().mapToLong(OkHttpResponse::getExecution).sum()+" ms");
