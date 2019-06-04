@@ -1,8 +1,9 @@
 package it.enryold.quasarflow.io.http.ahc.models;
 
+import it.enryold.quasarflow.io.http.interfaces.IQResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
-public class ApacheHttpResponse<T> {
+public class ApacheHttpResponse<T>  implements IQResponse<T, CloseableHttpResponse> {
 
     private T attachedDatas;
     private CloseableHttpResponse response;
