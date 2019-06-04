@@ -1,29 +1,29 @@
-package it.enryold.quasarflow.io.http.models;
+package it.enryold.quasarflow.io.okhttp.models;
 
 import com.squareup.okhttp.Request;
-import it.enryold.quasarflow.io.http.consts.QHttpConsts;
+import it.enryold.quasarflow.io.okhttp.consts.QHttpConsts;
 
 import java.util.UUID;
 
-public class QHTTPRequest<T> {
+public class OkHttpRequest<T> {
 
     private T attachedDatas;
     private String requestId;
     private Request request;
 
-    public QHTTPRequest(Request request){
+    public OkHttpRequest(Request request){
         this.request = request;
         this.requestId = UUID.randomUUID().toString();
         addRequestIdHeader();
     }
 
-    public QHTTPRequest(String requestId, Request request){
+    public OkHttpRequest(String requestId, Request request){
         this.request = request;
         this.requestId = requestId;
         addRequestIdHeader();
     }
 
-    public QHTTPRequest(String requestId, Request request, T attachedDatas){
+    public OkHttpRequest(String requestId, Request request, T attachedDatas){
         this.request = request;
         this.requestId = requestId;
         this.attachedDatas = attachedDatas;

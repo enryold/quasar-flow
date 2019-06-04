@@ -7,9 +7,9 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
 import it.enryold.quasarflow.interfaces.IEmitterTask;
 import it.enryold.quasarflow.interfaces.IFlow;
-import it.enryold.quasarflow.io.http.OkHttpProcessor;
-import it.enryold.quasarflow.io.http.models.QHTTPRequest;
-import it.enryold.quasarflow.io.http.models.QHTTPResponse;
+import it.enryold.quasarflow.io.okhttp.OkHttpProcessor;
+import it.enryold.quasarflow.io.okhttp.models.OkHttpRequest;
+import it.enryold.quasarflow.io.okhttp.models.OkHttpResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +34,7 @@ public class IOProcessorTests extends TestUtils {
 
 
     @Test
-    public void test() throws InterruptedException {
+    public void testAsync() throws InterruptedException {
 
         String requestPrefix = "REQ";
         String dataPrefix = "DATA";
@@ -44,7 +44,7 @@ public class IOProcessorTests extends TestUtils {
         String url = "https://reqres.in/api/users/2";
 
 
-        IEmitterTask<QHTTPRequest<String>> requestTask = publisherChannel -> {
+        IEmitterTask<OkHttpRequest<String>> requestTask = publisherChannel -> {
             for(int i=0; i<requests; i++){
 
                 try {
@@ -58,9 +58,9 @@ public class IOProcessorTests extends TestUtils {
                             .put(body)
                             .build();
 
-                    QHTTPRequest<String> qhttpRequest = new QHTTPRequest<>(requestPrefix+i, request, dataPrefix+i);
+                    OkHttpRequest<String> okHttpRequest = new OkHttpRequest<>(requestPrefix+i, request, dataPrefix+i);
 
-                    publisherChannel.send(qhttpRequest);
+                    publisherChannel.send(okHttpRequest);
 
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
@@ -71,27 +71,242 @@ public class IOProcessorTests extends TestUtils {
             }
         };
 
-        LinkedTransferQueue<QHTTPResponse<String>> responseQueue = resultQueue();
+        LinkedTransferQueue<OkHttpResponse<String>> responseQueue = resultQueue();
 
         long startTime = System.currentTimeMillis();
 
         IFlow currentFlow = QuasarFlow.newFlow()
                 .broadcastEmitter(requestTask)
-                .map(emitter -> new OkHttpProcessor<>(emitter)
+                .map(emitter -> new OkHttpProcessor<>(emitter, true)
                         .processWithFanIn(fibers))
                 .addConsumer()
                 .consume(responseQueue::add)
                 .start();
 
 
-        List<QHTTPResponse<String>> results = this.getResults(responseQueue, requests, 3, TimeUnit.SECONDS);
+        List<OkHttpResponse<String>> results = this.getResults(responseQueue, requests, 3, TimeUnit.SECONDS);
 
-        System.out.println("Executed "+requests+" requests in parallel ("+fibers+" fibers) in: "+(System.currentTimeMillis()-startTime)+" ms");
-        System.out.println("Requests summed execution time: "+results.stream().mapToLong(QHTTPResponse::getExecution).sum()+" ms");
+        System.out.println("ASYNC: Executed "+requests+" requests in parallel ("+fibers+" fibers) in: "+(System.currentTimeMillis()-startTime)+" ms");
+        System.out.println("ASYNC: Requests summed execution time: "+results.stream().mapToLong(OkHttpResponse::getExecution).sum()+" ms");
 
         assertEquals(results.size(), requests);
 
-        for(QHTTPResponse<String> resp : results){
+        for(OkHttpResponse<String> resp : results){
+            String idx0 = resp.getAttachedDatas().split(dataPrefix)[1];
+            String idx1 = resp.getRequestId().split(requestPrefix)[1];
+            assertEquals(idx0, idx1);
+        }
+
+        assertEquals(results.size(), requests);
+
+        //currentFlow.destroy();
+
+    }
+
+
+    @Test
+    public void testSync() throws InterruptedException {
+
+        String requestPrefix = "REQ";
+        String dataPrefix = "DATA";
+
+        int requests = 10;
+        int fibers = 4;
+        String url = "https://reqres.in/api/users/2";
+
+
+        IEmitterTask<OkHttpRequest<String>> requestTask = publisherChannel -> {
+            for(int i=0; i<requests; i++){
+
+                try {
+                    Map<String, String> payload = new HashMap<>();
+                    payload.put("name", "pippo"+i);
+                    payload.put("job", "pippo"+i);
+
+                    RequestBody body = RequestBody.create(MediaType.parse("application/json"), new ObjectMapper().writeValueAsBytes(payload));
+                    Request request = new Request.Builder()
+                            .url(url)
+                            .put(body)
+                            .build();
+
+                    OkHttpRequest<String> okHttpRequest = new OkHttpRequest<>(requestPrefix+i, request, dataPrefix+i);
+
+                    publisherChannel.send(okHttpRequest);
+
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+
+
+
+            }
+        };
+
+        LinkedTransferQueue<OkHttpResponse<String>> responseQueue = resultQueue();
+
+        long startTime = System.currentTimeMillis();
+
+        IFlow currentFlow = QuasarFlow.newFlow()
+                .broadcastEmitter(requestTask)
+                .map(emitter -> new OkHttpProcessor<>(emitter, false)
+                        .processWithFanIn(fibers))
+                .addConsumer()
+                .consume(responseQueue::add)
+                .start();
+
+
+        List<OkHttpResponse<String>> results = this.getResults(responseQueue, requests, 3, TimeUnit.SECONDS);
+
+        System.out.println("SYNC: Executed "+requests+" requests in parallel ("+fibers+" fibers) in: "+(System.currentTimeMillis()-startTime)+" ms");
+        System.out.println("SYNC: Requests summed execution time: "+results.stream().mapToLong(OkHttpResponse::getExecution).sum()+" ms");
+
+        assertEquals(results.size(), requests);
+
+        for(OkHttpResponse<String> resp : results){
+            String idx0 = resp.getAttachedDatas().split(dataPrefix)[1];
+            String idx1 = resp.getRequestId().split(requestPrefix)[1];
+            assertEquals(idx0, idx1);
+        }
+
+        assertEquals(results.size(), requests);
+
+        //currentFlow.destroy();
+
+    }
+
+
+
+
+    @Test
+    public void testAsyncLoad() throws InterruptedException {
+
+        String requestPrefix = "REQ";
+        String dataPrefix = "DATA";
+
+        int requests = 50;
+        int fibers = 50;
+        String url = "https://reqres.in/api/users/2";
+
+
+        IEmitterTask<OkHttpRequest<String>> requestTask = publisherChannel -> {
+            for(int i=0; i<requests; i++){
+
+                try {
+                    Map<String, String> payload = new HashMap<>();
+                    payload.put("name", "pippo"+i);
+                    payload.put("job", "pippo"+i);
+
+                    RequestBody body = RequestBody.create(MediaType.parse("application/json"), new ObjectMapper().writeValueAsBytes(payload));
+                    Request request = new Request.Builder()
+                            .url(url)
+                            .put(body)
+                            .build();
+
+                    OkHttpRequest<String> okHttpRequest = new OkHttpRequest<>(requestPrefix+i, request, dataPrefix+i);
+
+                    publisherChannel.send(okHttpRequest);
+
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+
+
+
+            }
+        };
+
+        LinkedTransferQueue<OkHttpResponse<String>> responseQueue = resultQueue();
+
+        long startTime = System.currentTimeMillis();
+
+        IFlow currentFlow = QuasarFlow.newFlow()
+                .broadcastEmitter(requestTask)
+                .map(emitter -> new OkHttpProcessor<>(emitter, true)
+                        .processWithFanIn(fibers))
+                .addConsumer()
+                .consume(responseQueue::add)
+                .start();
+
+
+        List<OkHttpResponse<String>> results = this.getResults(responseQueue, requests, 10, TimeUnit.SECONDS);
+
+        System.out.println("ASYNC: Executed "+requests+" requests in parallel ("+fibers+" fibers) in: "+(System.currentTimeMillis()-startTime)+" ms");
+        System.out.println("ASYNC: Requests summed execution time: "+results.stream().mapToLong(OkHttpResponse::getExecution).sum()+" ms");
+
+        assertEquals(results.size(), requests);
+
+        for(OkHttpResponse<String> resp : results){
+            String idx0 = resp.getAttachedDatas().split(dataPrefix)[1];
+            String idx1 = resp.getRequestId().split(requestPrefix)[1];
+            assertEquals(idx0, idx1);
+        }
+
+        assertEquals(results.size(), requests);
+
+        //currentFlow.destroy();
+
+    }
+
+
+    @Test
+    public void testSyncLoad() throws InterruptedException {
+
+        String requestPrefix = "REQ";
+        String dataPrefix = "DATA";
+
+        int requests = 50;
+        int fibers = 50;
+        String url = "https://reqres.in/api/users/2";
+
+
+        IEmitterTask<OkHttpRequest<String>> requestTask = publisherChannel -> {
+            for(int i=0; i<requests; i++){
+
+                try {
+                    Map<String, String> payload = new HashMap<>();
+                    payload.put("name", "pippo"+i);
+                    payload.put("job", "pippo"+i);
+
+                    RequestBody body = RequestBody.create(MediaType.parse("application/json"), new ObjectMapper().writeValueAsBytes(payload));
+                    Request request = new Request.Builder()
+                            .url(url)
+                            .put(body)
+                            .build();
+
+                    OkHttpRequest<String> okHttpRequest = new OkHttpRequest<>(requestPrefix+i, request, dataPrefix+i);
+
+                    publisherChannel.send(okHttpRequest);
+
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+
+
+
+            }
+        };
+
+        LinkedTransferQueue<OkHttpResponse<String>> responseQueue = resultQueue();
+
+        long startTime = System.currentTimeMillis();
+
+        IFlow currentFlow = QuasarFlow.newFlow()
+                .broadcastEmitter(requestTask)
+                .map(emitter -> new OkHttpProcessor<>(emitter, false)
+                        .processWithFanIn(fibers))
+                .addConsumer()
+                .consume(responseQueue::add)
+                .start();
+
+
+        List<OkHttpResponse<String>> results = this.getResults(responseQueue, requests, 10, TimeUnit.SECONDS);
+
+        System.out.println("SYNC: Executed "+requests+" requests in parallel ("+fibers+" fibers) in: "+(System.currentTimeMillis()-startTime)+" ms");
+        System.out.println("SYNC: Requests summed execution time: "+results.stream().mapToLong(OkHttpResponse::getExecution).sum()+" ms");
+
+        assertEquals(results.size(), requests);
+
+        for(OkHttpResponse<String> resp : results){
             String idx0 = resp.getAttachedDatas().split(dataPrefix)[1];
             String idx1 = resp.getRequestId().split(requestPrefix)[1];
             assertEquals(idx0, idx1);
