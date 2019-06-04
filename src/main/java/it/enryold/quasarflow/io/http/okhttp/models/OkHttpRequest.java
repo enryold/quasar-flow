@@ -2,10 +2,11 @@ package it.enryold.quasarflow.io.http.okhttp.models;
 
 import com.squareup.okhttp.Request;
 import it.enryold.quasarflow.io.http.consts.QHttpConsts;
+import it.enryold.quasarflow.io.http.interfaces.IQRequest;
 
 import java.util.UUID;
 
-public class OkHttpRequest<T> {
+public class OkHttpRequest<T> implements IQRequest<T, Request> {
 
     private T attachedDatas;
     private String requestId;

@@ -1,8 +1,9 @@
 package it.enryold.quasarflow.io.http.okhttp.models;
 
 import com.squareup.okhttp.Response;
+import it.enryold.quasarflow.io.http.interfaces.IQResponse;
 
-public class OkHttpResponse<T> {
+public class OkHttpResponse<T> implements IQResponse<T, Response> {
 
     private T attachedDatas;
     private Response response;

@@ -1,11 +1,13 @@
 package it.enryold.quasarflow.io.http.ahc.models;
 
+import com.squareup.okhttp.Request;
 import it.enryold.quasarflow.io.http.consts.QHttpConsts;
+import it.enryold.quasarflow.io.http.interfaces.IQRequest;
 import org.apache.http.client.methods.HttpUriRequest;
 
 import java.util.UUID;
 
-public class ApacheHttpRequest<T> {
+public class ApacheHttpRequest<T>  implements IQRequest<T, HttpUriRequest> {
 
     private T attachedDatas;
     private String requestId;
