@@ -5,6 +5,8 @@ import it.enryold.quasarflow.interfaces.IFlow;
 import it.enryold.quasarflow.interfaces.IFlowable;
 import it.enryold.quasarflow.models.metrics.QMetric;
 import it.enryold.quasarflow.models.utils.QSettings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +14,7 @@ import java.util.Optional;
 
 public abstract class AbstractFlow implements IFlow {
 
+    private final Logger log = LoggerFactory.getLogger(getClass());
     private List<IFlowable> startables = new ArrayList<>();
     private QSettings settings;
     private String name;

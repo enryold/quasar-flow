@@ -1,8 +1,8 @@
-package it.enryold.quasarflow.io.http.models;
+package it.enryold.quasarflow.io.http.okhttp.models;
 
 import com.squareup.okhttp.Response;
 
-public class QHTTPResponse<T> {
+public class OkHttpResponse<T> {
 
     private T attachedDatas;
     private Response response;
@@ -11,7 +11,7 @@ public class QHTTPResponse<T> {
     private boolean failure;
 
 
-    private QHTTPResponse(String requestId, long execution, Response response, boolean failure, T attachedDatas){
+    private OkHttpResponse(String requestId, long execution, Response response, boolean failure, T attachedDatas){
         this.requestId = requestId;
         this.response = response;
         this.execution = execution;
@@ -40,12 +40,12 @@ public class QHTTPResponse<T> {
     }
 
 
-    public static<T>  QHTTPResponse<T> error(String requestId, long execution, T attachedDatas){
-        return new QHTTPResponse<>(requestId,  execution, null, true, attachedDatas);
+    public static<T> OkHttpResponse<T> error(String requestId, long execution, T attachedDatas){
+        return new OkHttpResponse<>(requestId,  execution, null, true, attachedDatas);
     }
 
-    public static<T>  QHTTPResponse<T> success(String requestId, long execution, Response response, T attachedDatas){
-        return new QHTTPResponse<>(requestId,  execution, response, false, attachedDatas);
+    public static<T> OkHttpResponse<T> success(String requestId, long execution, Response response, T attachedDatas){
+        return new OkHttpResponse<>(requestId,  execution, response, false, attachedDatas);
     }
 
 }

@@ -2,6 +2,8 @@ package it.enryold.quasarflow;
 
 import it.enryold.quasarflow.interfaces.IEmitterTask;
 import it.enryold.quasarflow.models.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 public class TestUtils {
 
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected static final long MEGABYTE = 1024L * 1024L;
 
@@ -66,9 +69,9 @@ public class TestUtils {
         runtime.gc();
         // Calculate the used memory
         long memory = runtime.totalMemory() - runtime.freeMemory();
-        System.out.println("Max memory is: " + Runtime.getRuntime().maxMemory());
-        System.out.println("Used memory is bytes: " + memory);
-        System.out.println("Used memory is megabytes: "
+        log.info("Max memory is: " + Runtime.getRuntime().maxMemory());
+        log.info("Used memory is bytes: " + memory);
+        log.info("Used memory is megabytes: "
                 + bytesToMegabytes(memory));
     }
 

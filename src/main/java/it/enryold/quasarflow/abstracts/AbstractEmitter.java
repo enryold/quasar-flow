@@ -16,7 +16,7 @@ import org.reactivestreams.Publisher;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class AbstractEmitter<T> implements IEmitter<T> {
+public abstract class AbstractEmitter<T> extends AbstractFlowable<T> implements IEmitter<T> {
 
     protected Channel<T> emitterTaskChannel;
     private Fiber emitterTaskStrand;
@@ -26,7 +26,6 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     private IEmitterTask<T> task;
     private QSettings settings;
     private Fiber dispatcher;
-    private String name;
     private IRoutingKeyExtractor<T> extractorFunction;
     protected IFlow flow;
 
@@ -38,20 +37,11 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
     public AbstractEmitter(IFlow flow, String name){
         this.flow = flow;
         this.settings = flow.getSettings();
-        this.name = name == null ? getClass().getSimpleName()+this.hashCode() : name;
+        super.setName(name == null ? getClass().getSimpleName()+this.hashCode() : name);
         flow.addStartable(this);
     }
 
 
-    @Override
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
 
     @Override
     public <I extends IFlowable<T>> I withMetricChannel(Channel<QMetric> metricChannel) {
@@ -192,7 +182,11 @@ public abstract class AbstractEmitter<T> implements IEmitter<T> {
         }
 
         dispatcher.start();
+        log("START Dispatcher Strand "+dispatcher.getName());
+
         emitterTaskStrand.start();
+        log("START Emitter task Strand "+emitterTaskStrand.getName());
+
     }
 
     @Override

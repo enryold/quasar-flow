@@ -3,11 +3,15 @@ package it.enryold.quasarflow.abstracts;
 import it.enryold.quasarflow.components.IAccumulator;
 import it.enryold.quasarflow.components.IAccumulatorLengthFunction;
 import com.google.common.util.concurrent.AtomicDouble;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractAccumulator<E, T> implements IAccumulator<E, T> {
+
+
 
     private double byteSizeLimit;
     protected List<E> accumulator = new ArrayList<>();
