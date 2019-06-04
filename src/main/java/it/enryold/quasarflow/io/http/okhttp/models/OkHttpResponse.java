@@ -1,4 +1,4 @@
-package it.enryold.quasarflow.io.okhttp.models;
+package it.enryold.quasarflow.io.http.okhttp.models;
 
 import com.squareup.okhttp.Response;
 

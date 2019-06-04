@@ -7,9 +7,9 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
 import it.enryold.quasarflow.interfaces.IEmitterTask;
 import it.enryold.quasarflow.interfaces.IFlow;
-import it.enryold.quasarflow.io.okhttp.OkHttpProcessor;
-import it.enryold.quasarflow.io.okhttp.models.OkHttpRequest;
-import it.enryold.quasarflow.io.okhttp.models.OkHttpResponse;
+import it.enryold.quasarflow.io.http.okhttp.OkHttpProcessor;
+import it.enryold.quasarflow.io.http.okhttp.models.OkHttpRequest;
+import it.enryold.quasarflow.io.http.okhttp.models.OkHttpResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 

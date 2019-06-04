@@ -1,7 +1,7 @@
-package it.enryold.quasarflow.io.okhttp.models;
+package it.enryold.quasarflow.io.http.okhttp.models;
 
 import com.squareup.okhttp.Request;
-import it.enryold.quasarflow.io.okhttp.consts.QHttpConsts;
+import it.enryold.quasarflow.io.http.consts.QHttpConsts;
 
 import java.util.UUID;
 

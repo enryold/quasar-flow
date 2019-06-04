@@ -1,4 +1,4 @@
-package it.enryold.quasarflow.io.okhttp;
+package it.enryold.quasarflow.io.http.okhttp;
 
 import co.paralleluniverse.fibers.Fiber;
 import co.paralleluniverse.fibers.SuspendExecution;
@@ -9,13 +9,12 @@ import com.squareup.okhttp.Response;
 import it.enryold.quasarflow.abstracts.AbstractIOProcessor;
 import it.enryold.quasarflow.interfaces.IEmitter;
 import it.enryold.quasarflow.interfaces.IOProcessorAsyncTask;
-import it.enryold.quasarflow.io.okhttp.models.OkHttpRequest;
-import it.enryold.quasarflow.io.okhttp.models.OkHttpRequestCallback;
-import it.enryold.quasarflow.io.okhttp.models.OkHttpResponse;
+import it.enryold.quasarflow.io.http.okhttp.models.OkHttpRequest;
+import it.enryold.quasarflow.io.http.okhttp.models.OkHttpRequestCallback;
+import it.enryold.quasarflow.io.http.okhttp.models.OkHttpResponse;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
 
 import java.io.IOException;
-import java.util.function.Consumer;
 
 public class OkHttpProcessor<T> extends AbstractIOProcessor<OkHttpRequest<T>, OkHttpResponse<T>> {
 

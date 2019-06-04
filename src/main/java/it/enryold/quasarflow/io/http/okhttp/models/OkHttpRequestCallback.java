@@ -1,9 +1,9 @@
-package it.enryold.quasarflow.io.okhttp.models;
+package it.enryold.quasarflow.io.http.okhttp.models;
 
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
-import it.enryold.quasarflow.io.okhttp.consts.QHttpConsts;
+import it.enryold.quasarflow.io.http.consts.QHttpConsts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
