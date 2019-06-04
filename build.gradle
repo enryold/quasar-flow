@@ -40,11 +40,13 @@ dependencies {
     implementation group: 'co.paralleluniverse', name: 'quasar-core', version: '0.7.10'
     implementation group: 'co.paralleluniverse', name: 'quasar-reactive-streams', version: '0.7.10'
     implementation group: 'co.paralleluniverse', name: 'comsat-okhttp', version: '0.7.0'
+    implementation group: 'co.paralleluniverse', name: 'comsat-httpkit', version: '0.7.0'
 
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
     implementation group: 'com.google.guava', name: 'guava', version: '23.0'
     implementation "com.evanlennick:retry4j:0.15.0"
 
     testImplementation('org.junit.jupiter:junit-jupiter-api:5.4.2')
+    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
     testRuntime('org.junit.jupiter:junit-jupiter-engine:5.4.2')
 }

@@ -42,7 +42,7 @@ public class QHTTPRequestCallback<T> implements Callback
 
         String requestId = response.request().header(QHttpConsts.REQUEST_HEADER);
 
-        log.info("["+requestId+"] HTTP async request to "+response.request().url().toString()+" executed in "+execution+" ms ");
+        log.debug("["+requestId+"] HTTP async request to "+response.request().url().toString()+" executed in "+execution+" ms ");
 
         consumer.accept(QHTTPResponse.success(requestId, execution, response, attachedDatas));
 

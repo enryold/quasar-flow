@@ -54,7 +54,7 @@ public class MetricEmitterTests extends TestUtils {
                                 () -> new QMetricAccumulator(1_000_000),
                                 50,
                                 TimeUnit.MILLISECONDS, elms -> {
-                                    new QMetricSummary(elms).printSummary(System.out::println);
+                                    new QMetricSummary(elms).printSummary(log::info);
                                 }));
 
         metricEmitter.flow().start();

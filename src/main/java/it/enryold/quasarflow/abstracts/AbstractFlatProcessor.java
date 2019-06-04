@@ -31,7 +31,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 
-public abstract class AbstractFlatProcessor<E> implements IFlatProcessor<E> {
+public abstract class AbstractFlatProcessor<E> extends AbstractFlowable<E> implements IFlatProcessor<E> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -45,7 +45,6 @@ public abstract class AbstractFlatProcessor<E> implements IFlatProcessor<E> {
     private Channel<List<E>>[] rrChannels;
     final private List<ReceivePort<List<E>>> processorChannels = new ArrayList<>();
     private IEmitter<List<E>> emitter;
-    private String name;
     private QRoutingKey routingKey;
     private IFlow flow;
 
@@ -54,7 +53,7 @@ public abstract class AbstractFlatProcessor<E> implements IFlatProcessor<E> {
         this.flow = eEmitter.flow();
         this.emitter = eEmitter;
         this.settings = flow.getSettings();
-        this.name = name == null ? getClass().getSimpleName()+this.hashCode() : name;
+        super.setName(name == null ? getClass().getSimpleName()+this.hashCode() : name);
         this.routingKey = routingKey == null ? QRoutingKey.broadcast() : routingKey;
         flow.addStartable(this);
     }
@@ -68,15 +67,6 @@ public abstract class AbstractFlatProcessor<E> implements IFlatProcessor<E> {
     }
 
 
-    @Override
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
 
     @Override
     public <I extends IFlowable<E>> I withMetricChannel(Channel<QMetric> metricChannel) {
@@ -86,11 +76,14 @@ public abstract class AbstractFlatProcessor<E> implements IFlatProcessor<E> {
 
     @Override
     public void start() {
-        subscriberStrands.forEach(Fiber::start);
+        subscriberStrands
+                .stream()
+                .peek(s -> log("START Subscriber Strand "+s.getName()))
+                .forEach(Fiber::start);
 
         if(dispatcherStrand != null){
             dispatcherStrand.start();
-        }else{
+            log("START Dispatcher Strand "+dispatcherStrand.getName());
         }
 
     }
@@ -193,9 +186,9 @@ public abstract class AbstractFlatProcessor<E> implements IFlatProcessor<E> {
                     }
                     publisherChannel.send(x);
                 } catch (InterruptedException e) {
-                    log.debug("Strand interrupted: " + Strand.currentStrand().getName());
+                    log("buildEmitterTask Strand interrupted: " + Strand.currentStrand().getName());
                 } catch (Exception e) {
-                    log.error("Strand in Exception: " + Strand.currentStrand().getName() + " - Message: " + e.getMessage());
+                    error("buildEmitterTask Strand in Exception: " + Strand.currentStrand().getName() + " - Message: " + e.getMessage());
                     e.printStackTrace();
                 }
 

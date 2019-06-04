@@ -19,8 +19,6 @@ import it.enryold.quasarflow.models.metrics.QMetric;
 import it.enryold.quasarflow.models.utils.QSettings;
 import org.reactivestreams.Processor;
 import org.reactivestreams.Publisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,9 +29,8 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 
-public abstract class AbstractConsumer<E> implements IConsumer<E> {
+public abstract class AbstractConsumer<E> extends AbstractFlowable<E> implements IConsumer<E> {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
 
 
     final private List<Fiber<Void>> subscriberStrands = new ArrayList<>();
@@ -42,7 +39,6 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
     private IEmitter<E> emitter;
     private Channel<E>[] rrChannels;
     private Channel<QMetric> metricChannel;
-    private String name;
     private IFlow flow;
     private QSettings settings;
 
@@ -51,7 +47,7 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
         this.flow = eEmitter.flow();
         this.emitter = eEmitter;
         this.settings = flow.getSettings();
-        this.name = name == null ? getClass().getSimpleName()+this.hashCode() : name;
+        super.setName(name == null ? getClass().getSimpleName()+this.hashCode() : name);
         flow.addStartable(this);
     }
 
@@ -61,26 +57,24 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
     }
 
 
-    @Override
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
 
     @Override
     public <I extends IFlowable<E>> I withMetricChannel(Channel<QMetric> metricChannel) {
         this.metricChannel = metricChannel;
         return (I)this;
     }
+
+
+
     @Override
     public void start() {
-        subscriberStrands.forEach(Fiber::start);
+        subscriberStrands
+                .stream()
+                .peek(s -> log("START Subscriber Strand "+s.getName()))
+                .forEach(Fiber::start);
 
         if(dispatcherStrand != null){
+            log("START Dispatcher Strand "+dispatcherStrand.getName());
             dispatcherStrand.start();
         }
     }
@@ -258,10 +252,10 @@ public abstract class AbstractConsumer<E> implements IConsumer<E> {
 
                 }
                 catch (InterruptedException e){
-                    log.debug("Strand interrupted: "+Strand.currentStrand().getName());
+                    log("subscribeFiber Strand interrupted: "+Strand.currentStrand().getName());
                 }
                 catch (Exception e){
-                    log.error("Strand in Exception: "+Strand.currentStrand().getName()+" - Message: "+e.getMessage());
+                    error("subscribeFiber Strand in Exception: "+Strand.currentStrand().getName()+" - Message: "+e.getMessage());
                     e.printStackTrace();
                 }
 
