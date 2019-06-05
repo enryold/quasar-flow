@@ -1,4 +1,4 @@
-package it.enryold.quasarflow.io.http.okhttp.models;
+package it.enryold.quasarflow.io.http.clients.okhttp.models;
 
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.Request;
@@ -32,7 +32,18 @@ public class OkHttpRequestCallback<T> implements Callback
 
         log.error("["+requestId+"] HTTP async request to "+request.url().toString()+" executed in "+execution+" ms with exception: "+e.getMessage());
 
-        consumer.accept(OkHttpResponse.error(requestId, execution, attachedDatas));
+        consumer.accept(OkHttpResponse.error(requestId, execution, null ,attachedDatas));
+    }
+
+    public void onFailure(Request request, Response response, IOException e) {
+
+        long execution = (System.currentTimeMillis()-start);
+
+        String requestId = request.header(QHttpConsts.REQUEST_HEADER);
+
+        log.error("["+requestId+"] HTTP async request to "+request.url().toString()+" executed in "+execution+" ms with exception: "+e.getMessage());
+
+        consumer.accept(OkHttpResponse.error(requestId, execution, response, attachedDatas));
     }
 
     @Override

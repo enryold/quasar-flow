@@ -1,4 +1,4 @@
-package it.enryold.quasarflow.io.http.okhttp.models;
+package it.enryold.quasarflow.io.http.clients.okhttp.models;
 
 import com.squareup.okhttp.Request;
 import it.enryold.quasarflow.io.http.consts.QHttpConsts;
