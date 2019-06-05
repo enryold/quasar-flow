@@ -1,4 +1,4 @@
-package it.enryold.quasarflow.io.http.ahc;
+package it.enryold.quasarflow.io.http.clients.ahc;
 
 import co.paralleluniverse.fibers.Fiber;
 import co.paralleluniverse.fibers.httpclient.FiberHttpClient;
@@ -6,8 +6,8 @@ import co.paralleluniverse.strands.SuspendableRunnable;
 import it.enryold.quasarflow.abstracts.AbstractIOProcessor;
 import it.enryold.quasarflow.interfaces.IEmitter;
 import it.enryold.quasarflow.interfaces.IOProcessorAsyncTask;
-import it.enryold.quasarflow.io.http.ahc.models.ApacheHttpRequest;
-import it.enryold.quasarflow.io.http.ahc.models.ApacheHttpResponse;
+import it.enryold.quasarflow.io.http.clients.ahc.models.ApacheHttpRequest;
+import it.enryold.quasarflow.io.http.clients.ahc.models.ApacheHttpResponse;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -18,11 +18,9 @@ import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.impl.nio.reactor.IOReactorConfig;
 import org.apache.http.nio.reactor.IOReactorException;
 
-import java.io.IOException;
-
 public class ApacheHttpProcessor<T> extends AbstractIOProcessor<ApacheHttpRequest<T>, ApacheHttpResponse<T>> {
 
-    final private FiberHttpClient client = new FiberHttpClient(defaultClient());
+    private FiberHttpClient client = new FiberHttpClient(defaultClient());
 
     public ApacheHttpProcessor(IEmitter<ApacheHttpRequest<T>> eEmitter, String name, QRoutingKey routingKey) {
         super(eEmitter, name, routingKey);
@@ -39,7 +37,10 @@ public class ApacheHttpProcessor<T> extends AbstractIOProcessor<ApacheHttpReques
         init();
     }
 
-
+    public ApacheHttpProcessor<T> withOkHttpClient(CloseableHttpAsyncClient httpClient){
+        this.client = new FiberHttpClient(httpClient);
+        return this;
+    }
 
 
     private void init(){
@@ -62,20 +63,13 @@ public class ApacheHttpProcessor<T> extends AbstractIOProcessor<ApacheHttpReques
                                         sendPort.send(ApacheHttpResponse.success(elm.getRequestId(), execution, response, elm.getAttachedDatas()));
                                     } else {
                                         error("HTTP request to " + elm.getRequest().getURI() + " FAIL in " + execution + " ms with status: " + status);
-                                        sendPort.send(ApacheHttpResponse.error(elm.getRequestId(), execution, elm.getAttachedDatas()));
+                                        sendPort.send(ApacheHttpResponse.error(elm.getRequestId(), execution, response, elm.getAttachedDatas()));
 
 
                                     }
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                     error("HTTP request ERROR:" + e.getMessage());
-                                    throw new RuntimeException(e);
-                                }
-
-                                try {
-                                    response.close();
-                                } catch (final IOException e) {
-                                    error("HTTP request cannot close response ERROR:" + e.getMessage());
                                     throw new RuntimeException(e);
                                 }
 
@@ -86,7 +80,7 @@ public class ApacheHttpProcessor<T> extends AbstractIOProcessor<ApacheHttpReques
 
 
     private static CloseableHttpAsyncClient defaultClient(){
-        int timeout = 100_000;
+        int timeout = 10_000;
         int maxRequests = 100_000;
         int threads = 16;
 

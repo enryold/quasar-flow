@@ -1,6 +1,5 @@
-package it.enryold.quasarflow.io.http.ahc.models;
+package it.enryold.quasarflow.io.http.clients.ahc.models;
 
-import com.squareup.okhttp.Request;
 import it.enryold.quasarflow.io.http.consts.QHttpConsts;
 import it.enryold.quasarflow.io.http.interfaces.IQRequest;
 import org.apache.http.client.methods.HttpUriRequest;
