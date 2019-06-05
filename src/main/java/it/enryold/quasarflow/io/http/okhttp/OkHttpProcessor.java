@@ -15,10 +15,11 @@ import it.enryold.quasarflow.io.http.okhttp.models.OkHttpResponse;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 public class OkHttpProcessor<T> extends AbstractIOProcessor<OkHttpRequest<T>, OkHttpResponse<T>> {
 
-    private OkHttpClient okHttpClient = new FiberOkHttpClient();
+    private OkHttpClient okHttpClient = defaultClient();
 
     public OkHttpProcessor(IEmitter<OkHttpRequest<T>> eEmitter, String name, QRoutingKey routingKey, boolean async) {
         super(eEmitter, name, routingKey);
@@ -80,9 +81,12 @@ public class OkHttpProcessor<T> extends AbstractIOProcessor<OkHttpRequest<T>, Ok
                                 }
                             });
 
+                            final Response response;
+
                             try {
-                                Response response = okHttpClient.newCall(elm.getRequest()).execute();
+                                response = okHttpClient.newCall(elm.getRequest()).execute();
                                 callback.onResponse(response);
+                                response.body().close();
                             } catch (IOException e) {
                                 e.printStackTrace();
                                 callback.onFailure(elm.getRequest(),e);
@@ -90,5 +94,24 @@ public class OkHttpProcessor<T> extends AbstractIOProcessor<OkHttpRequest<T>, Ok
 
                         }).start();
 
+    }
+
+
+    private static OkHttpClient defaultClient(){
+
+        int timeout = 5;
+        int maxRequests = 100_000;
+
+        FiberOkHttpClient client = new FiberOkHttpClient();
+
+        client.getDispatcher().setMaxRequests(maxRequests);
+        client.getDispatcher().setMaxRequestsPerHost(maxRequests);
+
+        client.setRetryOnConnectionFailure(false);
+        client.setConnectTimeout(timeout, TimeUnit.SECONDS);
+        client.setReadTimeout(timeout, TimeUnit.SECONDS);
+        client.setWriteTimeout(timeout, TimeUnit.SECONDS);
+
+        return client;
     }
 }

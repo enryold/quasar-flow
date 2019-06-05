@@ -18,6 +18,8 @@ import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.impl.nio.reactor.IOReactorConfig;
 import org.apache.http.nio.reactor.IOReactorException;
 
+import java.io.IOException;
+
 public class ApacheHttpProcessor<T> extends AbstractIOProcessor<ApacheHttpRequest<T>, ApacheHttpResponse<T>> {
 
     final private FiberHttpClient client = new FiberHttpClient(defaultClient());
@@ -46,9 +48,12 @@ public class ApacheHttpProcessor<T> extends AbstractIOProcessor<ApacheHttpReques
                         (elm, sendPort) -> {
 
                             new Fiber<Void>((SuspendableRunnable) () -> {
+
+                                final CloseableHttpResponse response;
+
                                 try {
                                     long start = System.currentTimeMillis();
-                                    CloseableHttpResponse response = client.execute(elm.getRequest());
+                                    response = client.execute(elm.getRequest());
                                     long execution = (System.currentTimeMillis() - start);
                                     int status = response.getStatusLine().getStatusCode();
 
@@ -64,7 +69,16 @@ public class ApacheHttpProcessor<T> extends AbstractIOProcessor<ApacheHttpReques
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                     error("HTTP request ERROR:" + e.getMessage());
+                                    throw new RuntimeException(e);
                                 }
+
+                                try {
+                                    response.close();
+                                } catch (final IOException e) {
+                                    error("HTTP request cannot close response ERROR:" + e.getMessage());
+                                    throw new RuntimeException(e);
+                                }
+
                             }).start();
 
                         };
@@ -73,6 +87,7 @@ public class ApacheHttpProcessor<T> extends AbstractIOProcessor<ApacheHttpReques
 
     private static CloseableHttpAsyncClient defaultClient(){
         int timeout = 100_000;
+        int maxRequests = 100_000;
         int threads = 16;
 
         try {
@@ -81,8 +96,8 @@ public class ApacheHttpProcessor<T> extends AbstractIOProcessor<ApacheHttpReques
                     .setIoThreadCount(threads)
                     .setSoTimeout(timeout).build());
             final PoolingNHttpClientConnectionManager mgr = new PoolingNHttpClientConnectionManager(ioReactor);
-            mgr.setDefaultMaxPerRoute(timeout);
-            mgr.setMaxTotal(timeout);
+            mgr.setDefaultMaxPerRoute(maxRequests);
+            mgr.setMaxTotal(maxRequests);
 
             return
                     HttpAsyncClientBuilder
