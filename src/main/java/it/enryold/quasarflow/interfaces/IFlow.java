@@ -14,5 +14,6 @@ public interface IFlow {
     <I extends IFlow> I start();
     void destroy();
     void print();
+    void printMetrics();
 
 }

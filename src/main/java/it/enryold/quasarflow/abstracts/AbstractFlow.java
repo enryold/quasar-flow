@@ -128,6 +128,10 @@ public abstract class AbstractFlow implements IFlow {
         hiearchy.print();
     }
 
+    public void printMetrics(){
+        hiearchy.printMetrics();
+    }
+
 
 
 }

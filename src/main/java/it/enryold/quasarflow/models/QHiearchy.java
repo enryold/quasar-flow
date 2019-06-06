@@ -1,10 +1,12 @@
 package it.enryold.quasarflow.models;
 
 import it.enryold.quasarflow.interfaces.IFlowable;
+import it.enryold.quasarflow.models.metrics.QMetric;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class QHiearchy {
 
@@ -67,7 +69,7 @@ public class QHiearchy {
     }
 
 
-    public void print(String prefix, boolean isTail) {
+    protected void print(String prefix, boolean isTail) {
 
 
         System.out.println(prefix + (isTail ? "└── " : "├── ") + this.getFlowable().getName());
@@ -80,8 +82,40 @@ public class QHiearchy {
         }
     }
 
+    protected void printMetrics(String prefix, boolean isTail) {
+
+        int spaceChars = 50;
+
+
+        String metricString= this.flowable.getMetrics().stream().map(QMetric::toString).collect(Collectors.joining(" | "));
+        String logString = prefix + (isTail ? "└── " : "├── ") + this.getFlowable().getName();
+        String spaceString = " ";
+
+        int spaces = spaceChars - logString.length();
+
+        for(int i = 0; i < spaces; i++){
+            metricString = spaceString+metricString;
+        }
+
+
+        System.out.println(logString+metricString);
+
+
+        for (int i = 0; i < nestedFlowables.size() - 1; i++) {
+            nestedFlowables.get(i).printMetrics(prefix + (isTail ? "    " : "│   "), false);
+        }
+        if (nestedFlowables.size() > 0) {
+            nestedFlowables.get(nestedFlowables.size() - 1)
+                    .printMetrics(prefix + (isTail ?"    " : "│   "), true);
+        }
+    }
+
     public void print(){
         print("", false);
+    }
+
+    public void printMetrics(){
+        printMetrics("", false);
     }
 
 }

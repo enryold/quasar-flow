@@ -22,7 +22,7 @@ public class MetricEmitterTests extends TestUtils {
 
 
     @Test
-    public void testMetric() {
+    public void testMetric() throws InterruptedException {
 
         // PARAMS
         int elements = 19;
@@ -105,9 +105,11 @@ public class MetricEmitterTests extends TestUtils {
 
                 .flow();
 
-        currentFlow.print();
+        currentFlow.start();
 
+        Thread.sleep(1000);
 
+        currentFlow.printMetrics();
 
 
     }
