@@ -31,14 +31,12 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 
-public abstract class AbstractIOProcessor<E, O> extends AbstractFlowable<E> implements IOProcessor<E, O> {
+public abstract class AbstractIOProcessor<E, O> extends AbstractFlowable implements IOProcessor<E, O> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
 
     final protected List<Fiber<Void>> subscriberStrands = new ArrayList<>();
-    protected Channel<QMetric> metricChannel;
-    protected QSettings settings;
 
 
     private Fiber<Void> dispatcherStrand;
@@ -46,7 +44,6 @@ public abstract class AbstractIOProcessor<E, O> extends AbstractFlowable<E> impl
     final private List<ReceivePort<E>> processorChannels = new ArrayList<>();
     private IEmitter<E> emitter;
     private QRoutingKey routingKey;
-    private IFlow flow;
     protected IOProcessorAsyncTaskBuilder<E, O> processorAsyncTaskBuilder;
 
 
@@ -69,6 +66,11 @@ public abstract class AbstractIOProcessor<E, O> extends AbstractFlowable<E> impl
 
 
     @Override
+    public IFlowable parent() {
+        return emitter;
+    }
+
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -84,11 +86,6 @@ public abstract class AbstractIOProcessor<E, O> extends AbstractFlowable<E> impl
         return this;
     }
 
-    @Override
-    public <I extends IFlowable<E>> I withMetricChannel(Channel<QMetric> metricChannel) {
-        this.metricChannel = metricChannel;
-        return (I)this;
-    }
 
     @Override
     public void start() {
@@ -119,9 +116,8 @@ public abstract class AbstractIOProcessor<E, O> extends AbstractFlowable<E> impl
                 E x = in.receive();
                 if (x == null)
                     break;
-                if(metricChannel != null) {
-                    metricChannel.send(new FnBuildMetric().create(this, QMetricType.RECEIVED.name(), 1L));
-                }
+                receivedElements.incrementAndGet();
+
                 processorAsyncTaskBuilder.build().async(x, out);
             }
         });
@@ -193,9 +189,8 @@ public abstract class AbstractIOProcessor<E, O> extends AbstractFlowable<E> impl
                     I x = channel.receive();
                     if (x == null)
                         break;
-                    if(metricChannel != null) {
-                        metricChannel.send(new FnBuildMetric().create(this, QMetricType.PRODUCED.name(), 1L));
-                    }
+                    producedElements.incrementAndGet();
+
                     publisherChannel.send(x);
                 } catch (InterruptedException e) {
                     log("buildEmitterTask Strand interrupted: " + Strand.currentStrand().getName());

@@ -4,7 +4,7 @@ import co.paralleluniverse.strands.channels.Channel;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
 import org.reactivestreams.Publisher;
 
-public interface IEmitter<T> extends IFlowable<T> {
+public interface IEmitter<T> extends IFlowable {
 
 
 

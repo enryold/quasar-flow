@@ -29,7 +29,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 
-public abstract class AbstractConsumer<E> extends AbstractFlowable<E> implements IConsumer<E> {
+public abstract class AbstractConsumer<E> extends AbstractFlowable implements IConsumer<E> {
 
 
 
@@ -38,9 +38,7 @@ public abstract class AbstractConsumer<E> extends AbstractFlowable<E> implements
     private Fiber<Void> dispatcherStrand;
     private IEmitter<E> emitter;
     private Channel<E>[] rrChannels;
-    private Channel<QMetric> metricChannel;
-    private IFlow flow;
-    private QSettings settings;
+
 
 
     public AbstractConsumer(IEmitter<E> eEmitter, String name){
@@ -57,14 +55,10 @@ public abstract class AbstractConsumer<E> extends AbstractFlowable<E> implements
     }
 
 
-
     @Override
-    public <I extends IFlowable<E>> I withMetricChannel(Channel<QMetric> metricChannel) {
-        this.metricChannel = metricChannel;
-        return (I)this;
+    public IFlowable parent() {
+        return emitter;
     }
-
-
 
     @Override
     public void start() {
@@ -97,9 +91,7 @@ public abstract class AbstractConsumer<E> extends AbstractFlowable<E> implements
                 if (x == null)
                     break;
 
-                if(metricChannel != null) {
-                    metricChannel.send(new FnBuildMetric().create(this, QMetricType.RECEIVED.name(), 1L));
-                }
+                receivedElements.incrementAndGet();
                 out.send(x);
             }
         });
@@ -164,12 +156,12 @@ public abstract class AbstractConsumer<E> extends AbstractFlowable<E> implements
                         collection.add(x);
                     }
 
+                    receivedElements.incrementAndGet();
+
+
                 }while(collection.size() < chunkSize);
 
                 if(collection.size() > 0){
-                    if(metricChannel != null) {
-                        metricChannel.send(new FnBuildMetric().create(this, QMetricType.RECEIVED.name(), 1L));
-                    }
                     out.send(new ArrayList<>(collection));
                 }
 
@@ -214,14 +206,14 @@ public abstract class AbstractConsumer<E> extends AbstractFlowable<E> implements
                     }else{
                         isAccumulatorAvailable = accumulator.add(elm);
                     }
+
+                    receivedElements.incrementAndGet();
+
                 }
                 while (isAccumulatorAvailable);
 
                 if(accumulator.getRecords().size() > 0){
                     out.send(new ArrayList<>(accumulator.getRecords()));
-                    if(metricChannel != null) {
-                        metricChannel.send(new FnBuildMetric().create(this, QMetricType.RECEIVED.name(), 1L));
-                    }
                 }
 
                 accumulator = accumulatorFactory.build();
@@ -245,9 +237,7 @@ public abstract class AbstractConsumer<E> extends AbstractFlowable<E> implements
                     if (x == null)
                         break;
 
-                    if(metricChannel != null) {
-                        metricChannel.send(new FnBuildMetric().create(this, QMetricType.PRODUCED.name(), 1L));
-                    }
+                    producedElements.incrementAndGet();
                     ingestionTask.ingest(x);
 
                 }

@@ -34,14 +34,12 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 
-public abstract class AbstractProcessor<E> extends AbstractFlowable<E> implements IProcessor<E> {
+public abstract class AbstractProcessor<E> extends AbstractFlowable implements IProcessor<E> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
 
     final protected List<Fiber<Void>> subscriberStrands = new ArrayList<>();
-    protected Channel<QMetric> metricChannel;
-    protected QSettings settings;
 
 
     private Fiber<Void> dispatcherStrand;
@@ -49,7 +47,6 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable<E> implement
     final private List<ReceivePort<E>> processorChannels = new ArrayList<>();
     private IEmitter<E> emitter;
     private QRoutingKey routingKey;
-    private IFlow flow;
 
 
     public AbstractProcessor(IEmitter<E> eEmitter, String name, QRoutingKey routingKey){
@@ -81,12 +78,6 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable<E> implement
     }
 
     @Override
-    public <I extends IFlowable<E>> I withMetricChannel(Channel<QMetric> metricChannel) {
-        this.metricChannel = metricChannel;
-        return (I)this;
-    }
-
-    @Override
     public void start() {
         subscriberStrands
                 .stream()
@@ -105,7 +96,10 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable<E> implement
         return flow;
     }
 
-
+    @Override
+    public IFlowable parent() {
+        return emitter;
+    }
 
 
     protected  <T>ReceivePort<T> buildProcessor(Publisher<E> publisher, ITransformFactory<E, T> transformFactory)
@@ -117,9 +111,8 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable<E> implement
                 E x = in.receive();
                 if (x == null)
                     break;
-                if(metricChannel != null) {
-                    metricChannel.send(new FnBuildMetric().create(this, QMetricType.RECEIVED.name(), 1L));
-                }
+                receivedElements.incrementAndGet();
+
                 T o = transform.apply(x);
                 if(o != null){
                     out.send(o);
@@ -138,9 +131,8 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable<E> implement
                 E x = in.receive();
                 if (x == null)
                     break;
-                if(metricChannel != null) {
-                    metricChannel.send(new FnBuildMetric().create(this, QMetricType.RECEIVED.name(), 1L));
-                }
+                receivedElements.incrementAndGet();
+
                 out.send(x);
             }
         });
@@ -175,12 +167,12 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable<E> implement
                         collection.add(x);
                     }
 
+                    receivedElements.incrementAndGet();
+
                 }while(collection.size() < chunkSize);
 
                 if(collection.size() > 0){
-                    if(metricChannel != null) {
-                        metricChannel.send(new FnBuildMetric().create(this, QMetricType.RECEIVED.name(), 1L));
-                    }
+
                     out.send(new ArrayList<>(collection));
                 }
 
@@ -223,13 +215,14 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable<E> implement
                     }else{
                         isAccumulatorAvailable = accumulator.add(elm);
                     }
+
+                    receivedElements.incrementAndGet();
+
                 }
                 while (isAccumulatorAvailable);
 
                 if(accumulator.getRecords().size() > 0){
-                    if(metricChannel != null) {
-                        metricChannel.send(new FnBuildMetric().create(this, QMetricType.RECEIVED.name(), 1L));
-                    }
+
                     out.send(accumulator.getRecords());
                 }
 
@@ -309,9 +302,8 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable<E> implement
                     I x = channel.receive();
                     if (x == null)
                         break;
-                    if(metricChannel != null) {
-                        metricChannel.send(new FnBuildMetric().create(this, QMetricType.PRODUCED.name(), 1L));
-                    }
+                    producedElements.incrementAndGet();
+
                     publisherChannel.send(x);
                 } catch (InterruptedException e) {
                     log("buildEmitterTask Strand interrupted: " + Strand.currentStrand().getName());
@@ -329,14 +321,14 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable<E> implement
     public <EM extends IEmitter<E>> EM process(){
         ReceivePort<E> processor = this.buildProcessor(emitter.getPublisher(routingKey));
         this.registerProcessorChannel(processor);
-        return (EM)new QEmitter<E>(flow).broadcastEmitter(buildEmitterTask(processor));
+        return (EM)new QEmitter<E>(flow, this.getName()+"Emitter").broadcastEmitter(buildEmitterTask(processor));
     }
 
 
     public <T, EM extends IEmitter<T>> EM process(ITransformFactory<E, T> transformFactory){
         ReceivePort<T> processor = this.buildProcessor(emitter.getPublisher(routingKey), transformFactory);
         this.registerProcessorChannel(processor);
-        return (EM)new QEmitter<T>(flow).broadcastEmitter(buildEmitterTask(processor));
+        return (EM)new QEmitter<T>(flow, this.getName()+"Emitter").broadcastEmitter(buildEmitterTask(processor));
     }
 
 
@@ -346,7 +338,7 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable<E> implement
                 .map(this::buildProcessor)
                 .peek(this::registerProcessorChannel)
                 .map(this::buildEmitterTask)
-                .map(task -> new QEmitter<E>(flow).broadcastEmitter(task))
+                .map(task -> new QEmitter<E>(flow, this.getName()+"Emitter").broadcastEmitter(task))
                 .map(e -> (IEmitter<E>)e)
                 .collect(Collectors.toList());
 
@@ -362,7 +354,7 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable<E> implement
                 .map(p -> buildProcessor(p, transformFactory))
                 .peek(this::registerProcessorChannel)
                 .map(this::buildEmitterTask)
-                .map(task -> new QEmitter<T>(flow).broadcastEmitter(task))
+                .map(task -> new QEmitter<T>(flow, this.getName()+"Emitter").broadcastEmitter(task))
                 .map(e -> (IEmitter<T>)e)
                 .collect(Collectors.toList());
 
@@ -381,7 +373,7 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable<E> implement
                 .map(p -> buildProcessorWithSizeBatching(p, chunkSize, flushTimeout, flushTimeUnit))
                 .peek(this::registerProcessorChannel)
                 .map(this::buildEmitterTask)
-                .map(task -> new QEmitter<List<E>>(flow).broadcastEmitter(task))
+                .map(task -> new QEmitter<List<E>>(flow, this.getName()+"Emitter").broadcastEmitter(task))
                 .map(e -> (IEmitter<List<E>>)e)
                 .collect(Collectors.toList());
 
@@ -401,7 +393,7 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable<E> implement
                 .map(p -> buildProcessorWithByteBatching(p, accumulatorFactory, flushTimeout, flushTimeUnit))
                 .peek(this::registerProcessorChannel)
                 .map(this::buildEmitterTask)
-                .map(task -> new QEmitter<List<T>>(flow).broadcastEmitter(task))
+                .map(task -> new QEmitter<List<T>>(flow, this.getName()+"Emitter").broadcastEmitter(task))
                 .map(e -> (IEmitter<List<T>>)e)
                 .collect(Collectors.toList());
 

@@ -1,6 +1,6 @@
 package it.enryold.quasarflow.interfaces;
 
-public interface IOProcessor<I, O> extends IFlowable<I> {
+public interface IOProcessor<I, O> extends IFlowable {
 
 
     IOProcessor<I, O> withAsyncTaskBuilder(IOProcessorAsyncTaskBuilder<I, O> processorAsyncTaskBuilder);

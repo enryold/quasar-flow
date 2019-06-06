@@ -31,14 +31,12 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 
-public abstract class AbstractFlatProcessor<E> extends AbstractFlowable<E> implements IFlatProcessor<E> {
+public abstract class AbstractFlatProcessor<E> extends AbstractFlowable implements IFlatProcessor<E> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
 
     final protected List<Fiber<Void>> subscriberStrands = new ArrayList<>();
-    protected Channel<QMetric> metricChannel;
-    protected QSettings settings;
 
 
     private Fiber<Void> dispatcherStrand;
@@ -46,7 +44,6 @@ public abstract class AbstractFlatProcessor<E> extends AbstractFlowable<E> imple
     final private List<ReceivePort<List<E>>> processorChannels = new ArrayList<>();
     private IEmitter<List<E>> emitter;
     private QRoutingKey routingKey;
-    private IFlow flow;
 
 
     public AbstractFlatProcessor(IEmitter<List<E>> eEmitter, String name, QRoutingKey routingKey){
@@ -67,11 +64,9 @@ public abstract class AbstractFlatProcessor<E> extends AbstractFlowable<E> imple
     }
 
 
-
     @Override
-    public <I extends IFlowable<E>> I withMetricChannel(Channel<QMetric> metricChannel) {
-        this.metricChannel = metricChannel;
-        return (I)this;
+    public IFlowable parent() {
+        return emitter;
     }
 
     @Override
@@ -104,9 +99,8 @@ public abstract class AbstractFlatProcessor<E> extends AbstractFlowable<E> imple
                 List<E> xs = in.receive();
                 if (xs == null)
                     break;
-                if(metricChannel != null) {
-                    metricChannel.send(new FnBuildMetric().create(this, QMetricType.RECEIVED.name(), 1L));
-                }
+                receivedElements.incrementAndGet();
+
 
                 for(E x : xs){
                     out.send(x);
@@ -181,9 +175,8 @@ public abstract class AbstractFlatProcessor<E> extends AbstractFlowable<E> imple
                     I x = channel.receive();
                     if (x == null)
                         break;
-                    if(metricChannel != null) {
-                        metricChannel.send(new FnBuildMetric().create(this, QMetricType.PRODUCED.name(), 1L));
-                    }
+                    producedElements.incrementAndGet();
+
                     publisherChannel.send(x);
                 } catch (InterruptedException e) {
                     log("buildEmitterTask Strand interrupted: " + Strand.currentStrand().getName());
