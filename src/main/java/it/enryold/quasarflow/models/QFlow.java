@@ -6,7 +6,12 @@ import it.enryold.quasarflow.models.utils.QSettings;
 
 public class QFlow extends AbstractFlow {
 
-    public QFlow(){}
+    public QFlow(){
+        super();
+    }
+    public QFlow(String name, QSettings settings){
+        super(name, settings);
+    }
     public QFlow(QSettings settings){
         super(settings);
     }
