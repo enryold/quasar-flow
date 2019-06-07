@@ -3,6 +3,7 @@ package it.enryold.quasarflow;
 
 import it.enryold.quasarflow.interfaces.*;
 import it.enryold.quasarflow.io.http.clients.okhttp.models.OkHttpRequest;
+import it.enryold.quasarflow.models.utils.QRoutingKey;
 import it.enryold.quasarflow.models.utils.QSettings;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -102,6 +103,17 @@ public class MetricEmitterTests extends TestUtils {
                                             .process()
                                             .addConsumer("cInt2")
                                             .consume(e -> {})))
+                .addProcessor("stringProcessor4",
+                        p -> p
+                                .process()
+                                .routed(o -> QRoutingKey.withKey(o.charAt(6)+""))
+                                .addProcessor("processor0", QRoutingKey.withKey("0"), p1 -> p1.process().addConsumer("c2").consume(e -> {}))
+                                .addProcessor("processor1", QRoutingKey.withKey("1"), p1 -> p1.process().addConsumer("c2").consume(e -> {})))
+                .map(emitter ->
+                        emitter
+                        .addProcessor("intProcessorMapped").process(() -> String::length)
+                )
+
 
                 .flow();
 

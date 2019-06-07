@@ -12,11 +12,7 @@ import co.paralleluniverse.strands.channels.SendPort;
 import co.paralleluniverse.strands.channels.reactivestreams.ReactiveStreams;
 import it.enryold.quasarflow.components.IAccumulator;
 import it.enryold.quasarflow.components.IAccumulatorFactory;
-import it.enryold.quasarflow.enums.QMetricType;
 import it.enryold.quasarflow.interfaces.*;
-import it.enryold.quasarflow.models.metrics.FnBuildMetric;
-import it.enryold.quasarflow.models.metrics.QMetric;
-import it.enryold.quasarflow.models.utils.QSettings;
 import org.reactivestreams.Processor;
 import org.reactivestreams.Publisher;
 
@@ -329,7 +325,7 @@ public abstract class AbstractConsumer<E> extends AbstractFlowable implements IC
 
     @Override
     public String toString() {
-        return "RECEIVER: "+((name == null) ? this.hashCode() : name);
+        return "Consumer: "+this.getName();
     }
 
     @Override

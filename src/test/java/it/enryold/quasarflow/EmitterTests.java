@@ -6,6 +6,7 @@ import co.paralleluniverse.strands.channels.Channel;
 import it.enryold.quasarflow.interfaces.IEmitterTask;
 import it.enryold.quasarflow.interfaces.IFlow;
 import it.enryold.quasarflow.interfaces.IRoutingKeyExtractor;
+import it.enryold.quasarflow.models.utils.QEmitterChannel;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
 import it.enryold.quasarflow.models.utils.QSettings;
 import org.junit.jupiter.api.AfterEach;
@@ -122,8 +123,10 @@ public class EmitterTests extends TestUtils {
             String[] elementsToProduce = {"A1", "A2", "B1", "B2", "C0"};
 
             @Override
-            public void emit(Channel<String> publisherChannel) throws InterruptedException, SuspendExecution {
-                for(String str : elementsToProduce){ publisherChannel.send(str);}
+            public void emitOn(QEmitterChannel<String> publisherChannel) throws InterruptedException, SuspendExecution {
+                for(String str : elementsToProduce){
+                    publisherChannel.sendOnChannel(str);
+                }
             }
         };
 

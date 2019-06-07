@@ -41,6 +41,8 @@ public interface IEmitter<T> extends IFlowable {
     IEmitter<T> addProcessor(QRoutingKey routingKey, Injector<IProcessor<T>> processorInjector);
     IEmitter<T> addProcessor(String name, QRoutingKey routingKey, Injector<IProcessor<T>> processorInjector);
 
+    <O> IFlatProcessor<O> addFlatProcessor(String name);
+
 
     // Consumer
     <S extends IConsumer<T>> S addConsumer(String name);

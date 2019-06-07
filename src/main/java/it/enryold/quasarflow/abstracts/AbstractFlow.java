@@ -46,22 +46,27 @@ public abstract class AbstractFlow implements IFlow {
 
     public void setParentNested()
     {
-        resetNested();
+        removeNested(1);
     }
 
     @Override
     public void setNested(IFlowable nested) {
 
-        int requestNestedDeep = hiearchy.find(nested).map(QHiearchy::level).orElse(0);
-        int lastNestedDeep = hiearchy.find(currentNested).map(QHiearchy::level).orElse(0);
+        Optional<QHiearchy> requestNested = hiearchy.find(nested);
+        if(!requestNested.isPresent()) { return; }
+        Optional<QHiearchy> lastNested = hiearchy.find(currentNested);
+        if(!lastNested.isPresent()) { return; }
+
+        int requestNestedDeep = requestNested.map(QHiearchy::level).orElse(0);
+        int lastNestedDeep = lastNested.map(QHiearchy::level).orElse(0);
 
         if(currentNested != null && !currentNested.equals(nested)){
 
-            if(requestNestedDeep > lastNestedDeep)
+            if(requestNestedDeep >= lastNestedDeep)
             {
                 addNested(nested);
             }else{
-                resetNested();
+                removeNested(1);
             }
 
         }else{
@@ -76,14 +81,14 @@ public abstract class AbstractFlow implements IFlow {
         currentNested = startable;
     }
 
-    private void resetNested()
+    private void removeNested(int delta)
     {
-        nestedList.remove(nestedList.size()-1);
+        nestedList.remove(nestedList.size()-delta);
 
         if(nestedList.size() == 0){
             addNested(hiearchy.getFlowable());
         }else{
-            currentNested = nestedList.get(nestedList.size()-1);
+            currentNested = nestedList.get(nestedList.size()-delta);
         }
 
     }
@@ -98,7 +103,14 @@ public abstract class AbstractFlow implements IFlow {
             hiearchy = new QHiearchy(startable);
             addNested(startable);
         }else{
-            hiearchy.find(currentNested).ifPresent(s -> s.addNestedFlowables(startable));
+            if(startable.parent() != null && currentNested.parent() != null && startable.parent().equals(currentNested.parent())){
+                hiearchy.find(currentNested.parent()).ifPresent(s -> s.addNestedFlowables(startable));
+                currentNested = currentNested.parent();
+            }else{
+                hiearchy.find(currentNested).ifPresent(s -> s.addNestedFlowables(startable));
+            }
+
+
         }
     }
 

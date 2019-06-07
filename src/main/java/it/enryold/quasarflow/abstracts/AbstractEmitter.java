@@ -9,6 +9,7 @@ import co.paralleluniverse.strands.channels.ReceivePort;
 import co.paralleluniverse.strands.channels.SendPort;
 import co.paralleluniverse.strands.channels.reactivestreams.ReactiveStreams;
 import it.enryold.quasarflow.interfaces.*;
+import it.enryold.quasarflow.models.utils.QEmitterChannel;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
 import org.reactivestreams.Publisher;
 
@@ -58,10 +59,11 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable implements IEm
     {
         this.task = task;
         emitterTaskChannel = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
-        emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> { if(task != null){
-            task.emit(emitterTaskChannel);
-            producedElements.incrementAndGet();
 
+        final QEmitterChannel<T> qEmitterChannel = new QEmitterChannel<>(emitterTaskChannel, t -> producedElements.incrementAndGet());
+
+        emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> { if(task != null){
+            task.emitOn(qEmitterChannel);
         }
         });
         emitterTaskPublisher = ReactiveStreams.toPublisher(emitterTaskChannel);
@@ -73,10 +75,11 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable implements IEm
         this.task = task;
         this.extractorFunction = extractor;
         emitterTaskChannel = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
-        emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> { if(task != null){
 
-            task.emit(emitterTaskChannel);
-            producedElements.incrementAndGet();
+        final QEmitterChannel<T> qEmitterChannel = new QEmitterChannel<>(emitterTaskChannel, t -> producedElements.incrementAndGet());
+
+        emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> { if(task != null){
+            task.emitOn(qEmitterChannel);
         } });
         emitterTaskPublisher = ReactiveStreams.toPublisher(emitterTaskChannel);
         return (E)this;
@@ -124,6 +127,13 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable implements IEm
         flow.setNested(processor);
         processorInjector.accept(processor);
         return emitter;
+    }
+
+    @Override
+    public <O> IFlatProcessor<O> addFlatProcessor(String name) {
+        IFlatProcessor<O> flatProcessor = this.addFlatProcessor();
+        flatProcessor.setName(name);
+        return flatProcessor;
     }
 
     @Override
@@ -296,7 +306,7 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable implements IEm
 
     @Override
     public String toString() {
-        return "EMITTER: "+((name == null) ? this.hashCode() : name);
+        return "Emitter: "+this.getName();
     }
 
 }

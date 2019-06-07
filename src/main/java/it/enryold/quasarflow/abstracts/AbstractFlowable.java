@@ -26,8 +26,13 @@ public abstract class AbstractFlowable implements IFlowable {
     @Override
     public List<QMetric> getMetrics() {
         return new ArrayList<QMetric>() {{
-            add(new FnBuildMetric().create(QMetricType.PRODUCED.name(), producedElements.get()));
-            add(new FnBuildMetric().create(QMetricType.RECEIVED.name(), receivedElements.get()));
+            if(receivedElements.get() != 0){
+                add(new FnBuildMetric().create(QMetricType.RECEIVED.name(), receivedElements.get()));
+            }
+            if(producedElements.get() != 0){
+                add(new FnBuildMetric().create(QMetricType.PRODUCED.name(), producedElements.get()));
+            }
+
         }};
     }
 
