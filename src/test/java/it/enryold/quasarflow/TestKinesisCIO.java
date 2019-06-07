@@ -79,7 +79,7 @@
 //    @Test
 //    public void testKinesisFirehose() throws InterruptedException {
 //
-//        IEmitterTask<User> userEmitter = publisherChannel -> { for(User usr : userGenerator(2_000_000)){ publisherChannel.send(usr); } };
+//        IEmitterTask<User> userEmitter = publisherChannel -> { for(User usr : userGenerator(2_000_000)){ publisherChannel.sendOnChannel(usr); } };
 //
 //        AmazonKinesisFirehose firehoseClient = AmazonKinesisFirehoseClientBuilder
 //                .standard()
@@ -109,7 +109,7 @@
 //    @Test
 //    public void testKPL_KCL() throws InterruptedException {
 //
-//        IEmitterTask<User> userEmitter = publisherChannel -> { for(User usr : userGenerator(2_000_000)){ publisherChannel.send(usr); } };
+//        IEmitterTask<User> userEmitter = publisherChannel -> { for(User usr : userGenerator(2_000_000)){ publisherChannel.sendOnChannel(usr); } };
 //
 //        AmazonKinesis amazonKinesis = AmazonKinesisClientBuilder.standard()
 //                .withCredentials(new AWSStaticCredentialsProvider(credentials))
@@ -148,9 +148,11 @@
 //        KSQFlow.newFlow(kclConfiguration())
 //                .kinesisEmitter(recordProcessorFactory)
 //                .addProcessor(QRoutingKey.withKey("PARTITION_KEY"), sub -> sub
-//                        .process(new KinesisJsonListDecoder<>(User.class))
+//                        .process(() -> new KinesisJsonListDecoder<>(User.class))
+//                        .<User>addFlatProcessor()
+//                        .process()
 //                        .addConsumer(rec -> rec.consumeWithFanOutAndSizeBatching(4, 100, 10, TimeUnit.SECONDS,
-//                                (IConsumerTaskFactory<List<List<User>>>) () -> elm -> System.out.println(Strand.currentStrand().getName()+" - List received with size: "+elm.size()))))
+//                                (IConsumerTaskFactory<List<User>>) () -> elm -> System.out.println(Strand.currentStrand().getName()+" - List received with size: "+elm))))
 //                .flow()
 //                .start();
 //
