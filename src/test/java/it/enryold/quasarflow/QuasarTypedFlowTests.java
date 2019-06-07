@@ -56,13 +56,7 @@ public class QuasarTypedFlowTests extends TestUtils {
         IFlow currentFlow = QuasarFlow.newFlow("MainFlow", QSettings.test())
                 .broadcastEmitter(stringEmitter, "mainStringEmitter")
                 .addConsumer("mainStringConsumer")
-                .consume(elm -> {
-                    try {
-                        typedFlow.getEmitter().getChannel().send(elm);
-                    } catch (SuspendExecution | InterruptedException suspendExecution) {
-                        suspendExecution.printStackTrace();
-                    }
-                })
+                .consume(typedFlow.buildConsumerTask())
                 .start();
 
 
