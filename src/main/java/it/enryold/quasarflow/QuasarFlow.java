@@ -19,6 +19,9 @@ public class QuasarFlow {
     private QuasarFlow(QSettings settings){
         qFlow = new QFlow(settings);
     }
+    private QuasarFlow(String name, QSettings settings){
+        qFlow = new QFlow(name,settings);
+    }
 
 
     public static QuasarFlow newFlow(){
@@ -26,6 +29,9 @@ public class QuasarFlow {
     }
     public static QuasarFlow newFlow(QSettings settings){
         return new QuasarFlow(settings);
+    }
+    public static QuasarFlow newFlow(String name, QSettings settings){
+        return new QuasarFlow(name, settings);
     }
 
 

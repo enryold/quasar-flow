@@ -115,12 +115,12 @@ public class QHiearchy {
         }
     }
 
-    public void print(){
-        print("Flow ", false);
+    public void print(String name){
+        print(name, false);
     }
 
-    public void printMetrics(){
-        printMetrics("Metrics ", false);
+    public void printMetrics(String name){
+        printMetrics(name, false);
     }
 
 }

@@ -292,7 +292,7 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable implements I
                 .map(ch -> subscribeFiber(fanInChannel, ch))
                 .forEach(subscriberStrands::add);
 
-        return new QEmitter<I>(flow)
+        return new QEmitter<I>(flow, this.getName()+"Emitter")
                 .broadcastEmitter(this.buildEmitterTask(fanInChannel));
     }
 

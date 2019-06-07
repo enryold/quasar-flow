@@ -21,6 +21,11 @@ public class QuasarTypedFlow<T> {
         inputEmitter = new QEmitter<T>(qFlow).broadcastEmitter(publisherChannel -> { });
     }
 
+    private QuasarTypedFlow(String name, QSettings settings){
+        qFlow = new QFlow(name, settings);
+        inputEmitter = new QEmitter<T>(qFlow).broadcastEmitter(publisherChannel -> { });
+    }
+
 
     public static <T> QuasarTypedFlow<T> newFlow(){
         return new QuasarTypedFlow<>();
@@ -28,11 +33,19 @@ public class QuasarTypedFlow<T> {
     public static <T> QuasarTypedFlow<T> newFlow(QSettings settings){
         return new QuasarTypedFlow<>(settings);
     }
+    public static <T> QuasarTypedFlow<T> newFlow(String name, QSettings settings){
+        return new QuasarTypedFlow<>(name, settings);
+    }
 
 
 
     public IEmitter<T> getEmitter(){
         return inputEmitter;
     }
+    public IEmitter<T> getEmitter(String name){
+        inputEmitter.setName(name);
+        return inputEmitter;
+    }
+    public IFlow getFlow(){ return qFlow; }
 
 }

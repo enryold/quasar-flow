@@ -43,18 +43,19 @@ public class QuasarTypedFlowTests extends TestUtils {
 
 
 
-        QuasarTypedFlow<String> typedFlow = QuasarTypedFlow.<String>newFlow(QSettings.test());
+        QuasarTypedFlow<String> typedFlow = QuasarTypedFlow.newFlow("StringFlow", QSettings.test());
 
         typedFlow
-                .getEmitter()
-                .map(emitter -> new QProcessor<>(emitter).process(() -> String::length))
-                .addConsumer()
+                .getEmitter("stringEmitter")
+                .addProcessor("stringProcessor")
+                .processWithFanIn(8, () -> String::length)
+                .addConsumer("stringConsumer")
                 .consume(resultQueue::put)
                 .start();
 
-        IFlow currentFlow = QuasarFlow.newFlow(QSettings.test())
-                .broadcastEmitter(stringEmitter)
-                .addConsumer()
+        IFlow currentFlow = QuasarFlow.newFlow("MainFlow", QSettings.test())
+                .broadcastEmitter(stringEmitter, "mainStringEmitter")
+                .addConsumer("mainStringConsumer")
                 .consume(elm -> {
                     try {
                         typedFlow.getEmitter().getChannel().send(elm);
@@ -72,6 +73,11 @@ public class QuasarTypedFlowTests extends TestUtils {
         List<Integer> results = null;
         try {
             results = getResults(resultQueue, elements, flushSeconds, TimeUnit.SECONDS);
+
+            typedFlow.getFlow().printMetrics();
+            log.info("-------------");
+            currentFlow.printMetrics();
+
             assertEquals(results.size(), elements, "Elements are:" + results.size() + " expected " + elements);
         } catch (InterruptedException e) {
             fail();
