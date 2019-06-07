@@ -15,8 +15,8 @@ public class KSQFlow {
     private KCLFlow flow;
 
     private KSQFlow(KinesisClientLibConfiguration kinesisClientLibConfiguration,
-                    QSettings settings, Channel<QMetric> metricChannel){
-        flow = new KCLFlow(kinesisClientLibConfiguration, settings, metricChannel);
+                    QSettings settings){
+        flow = new KCLFlow(kinesisClientLibConfiguration, settings);
     }
 
     private KSQFlow(KinesisClientLibConfiguration kinesisClientLibConfiguration){
@@ -25,11 +25,6 @@ public class KSQFlow {
 
     public static KSQFlow newFlow(KinesisClientLibConfiguration kinesisClientLibConfiguration){
         return new KSQFlow(kinesisClientLibConfiguration);
-    }
-
-    public static KSQFlow newFlow(KinesisClientLibConfiguration kinesisClientLibConfiguration,
-                                  QSettings settings, Channel<QMetric> metricChannel){
-        return new KSQFlow(kinesisClientLibConfiguration, settings, metricChannel);
     }
 
     public KCLEmitter kinesisEmitter(RecordProcessorFactory recordProcessorFactory){

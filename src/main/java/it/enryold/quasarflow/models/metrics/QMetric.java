@@ -5,27 +5,17 @@ import java.util.Date;
 
 public class QMetric {
 
-    private String flowName;
-    private String componentName;
     private String metricName;
     private Long value;
     private long creation;
 
     private QMetric(Builder builder) {
-        flowName = builder.flowName;
-        componentName = builder.componentName;
         metricName = builder.metricName;
         value = builder.value;
         creation = new Date().getTime();
     }
 
-    public String getFlowName() {
-        return flowName;
-    }
 
-    public String getComponentName() {
-        return componentName;
-    }
 
     public String getMetricName() {
         return metricName;
@@ -50,8 +40,6 @@ public class QMetric {
 
 
     public static final class Builder {
-        private String flowName;
-        private String componentName;
         private String metricName;
         private Long value;
 
@@ -59,15 +47,6 @@ public class QMetric {
         private Builder() {
         }
 
-        public Builder withFlowName(String val) {
-            flowName = val;
-            return this;
-        }
-
-        public Builder withComponentName(String val) {
-            componentName = val;
-            return this;
-        }
 
         public Builder withMetricName(String val) {
             metricName = val;
@@ -86,6 +65,6 @@ public class QMetric {
 
     @Override
     public String toString() {
-        return "Metric of: "+componentName+"(flow:"+flowName+") with name:"+metricName+" created at:"+creation;
+        return metricName+": "+value;
     }
 }

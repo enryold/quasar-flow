@@ -5,7 +5,7 @@ import it.enryold.quasarflow.components.IAccumulatorFactory;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public interface IConsumer<T> extends IFlowable<T>  {
+public interface IConsumer<T> extends IFlowable  {
 
     IFlow consume(IConsumerTask<T> task);
 

@@ -1,14 +1,17 @@
 package it.enryold.quasarflow.interfaces;
 
-import co.paralleluniverse.strands.channels.Channel;
 import it.enryold.quasarflow.models.metrics.QMetric;
 
-public interface IFlowable<T> {
+import java.util.List;
 
-    <I extends IFlowable<T>> I withMetricChannel(Channel<QMetric> metricChannel);
+public interface IFlowable {
+
     void setName(String name);
+    List<QMetric> getMetrics();
     String getName();
     void start();
     void destroy();
     IFlow flow();
+    IFlowable parent();
+
 }

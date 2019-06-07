@@ -24,14 +24,14 @@ public class TestUtils {
     protected IEmitterTask<String> stringsEmitterTask(int max)
     {
         return publisherChannel -> {
-            for(int i = 0; i<max; i++){ publisherChannel.send("String"+i); } };
+            for(int i = 0; i<max; i++){ publisherChannel.sendOnChannel("String"+i); } };
     }
 
 
     protected IEmitterTask<String> tenByteStringsEmitterTask(int max)
     {
         return publisherChannel -> {
-            for(int i = 0; i<max; i++){ publisherChannel.send("0123456789"); } };
+            for(int i = 0; i<max; i++){ publisherChannel.sendOnChannel("0123456789"); } };
     }
 
     protected <T>LinkedTransferQueue<T> resultQueue()

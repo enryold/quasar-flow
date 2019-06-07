@@ -1,6 +1,6 @@
 package it.enryold.quasarflow.interfaces;
 
-public interface IFlatProcessor<I> extends IFlowable<I> {
+public interface IFlatProcessor<I> extends IFlowable {
 
 
 

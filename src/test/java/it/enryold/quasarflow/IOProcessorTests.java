@@ -68,7 +68,7 @@ public class IOProcessorTests extends TestUtils {
 
                     OkHttpRequest<String> okHttpRequest = new OkHttpRequest<>(requestPrefix+i, request, dataPrefix+i);
 
-                    publisherChannel.send(okHttpRequest);
+                    publisherChannel.sendOnChannel(okHttpRequest);
 
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
@@ -139,7 +139,7 @@ public class IOProcessorTests extends TestUtils {
 
                     OkHttpRequest<String> okHttpRequest = new OkHttpRequest<>(requestPrefix+i, request, dataPrefix+i);
 
-                    publisherChannel.send(okHttpRequest);
+                    publisherChannel.sendOnChannel(okHttpRequest);
 
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
@@ -212,7 +212,7 @@ public class IOProcessorTests extends TestUtils {
 
                     OkHttpRequest<String> okHttpRequest = new OkHttpRequest<>(requestPrefix+i, request, dataPrefix+i);
 
-                    publisherChannel.send(okHttpRequest);
+                    publisherChannel.sendOnChannel(okHttpRequest);
 
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
@@ -283,7 +283,7 @@ public class IOProcessorTests extends TestUtils {
 
                     OkHttpRequest<String> okHttpRequest = new OkHttpRequest<>(requestPrefix+i, request, dataPrefix+i);
 
-                    publisherChannel.send(okHttpRequest);
+                    publisherChannel.sendOnChannel(okHttpRequest);
 
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
@@ -360,7 +360,7 @@ public class IOProcessorTests extends TestUtils {
 
                     ApacheHttpRequest<String> okHttpRequest = new ApacheHttpRequest<>(requestPrefix+i, request, dataPrefix+i);
 
-                    publisherChannel.send(okHttpRequest);
+                    publisherChannel.sendOnChannel(okHttpRequest);
 
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
@@ -438,7 +438,7 @@ public class IOProcessorTests extends TestUtils {
 
                     ApacheHttpRequest<String> okHttpRequest = new ApacheHttpRequest<>(requestPrefix+i, request, dataPrefix+i);
 
-                    publisherChannel.send(okHttpRequest);
+                    publisherChannel.sendOnChannel(okHttpRequest);
 
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();

@@ -1,23 +1,12 @@
 package it.enryold.quasarflow;
 
 
-import it.enryold.quasarflow.components.IAccumulator;
-import it.enryold.quasarflow.components.IAccumulatorFactory;
 import it.enryold.quasarflow.interfaces.*;
-import it.enryold.quasarflow.models.QConsumer;
-import it.enryold.quasarflow.models.metrics.QMetric;
-import it.enryold.quasarflow.models.metrics.QMetricAccumulator;
-import it.enryold.quasarflow.models.metrics.QMetricSummary;
+import it.enryold.quasarflow.io.http.clients.okhttp.models.OkHttpRequest;
+import it.enryold.quasarflow.models.utils.QRoutingKey;
 import it.enryold.quasarflow.models.utils.QSettings;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.concurrent.LinkedTransferQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class MetricEmitterTests extends TestUtils {
 
@@ -34,48 +23,105 @@ public class MetricEmitterTests extends TestUtils {
 
 
     @Test
-    public void testMetric() {
+    public void testMetric() throws InterruptedException {
 
         // PARAMS
         int elements = 19;
-        int flushSeconds = 1;
 
         // EMITTER
         IEmitterTask<String> stringEmitter = stringsEmitterTask(elements);
 
-        // OUTPUT CHANNEL
-        LinkedTransferQueue<String> resultQueue = resultQueue();
+
+        IFlow currentFlow;
 
 
-        IEmitter<QMetric> metricEmitter = MetricFlow.newFlow()
-                .metricEmitter()
-                .consume(emitter -> new QConsumer<>(emitter)
-                        .consumeWithByteBatching(
-                                () -> new QMetricAccumulator(1_000_000),
-                                50,
-                                TimeUnit.MILLISECONDS, elms -> {
-                                    new QMetricSummary(elms).printSummary(log::info);
-                                }));
-
-        metricEmitter.flow().start();
-
-
-        IFlow currentFlow = QuasarFlow.newFlow(QSettings.test(), metricEmitter.getChannel())
+        currentFlow = QuasarFlow.newFlow(QSettings.test())
                 .broadcastEmitter(stringEmitter, "stringEmitter")
+                .addProcessor("stringProcessor")
+                .process()
                 .addConsumer("stringConsumer")
-                .consume(resultQueue::put)
-                .start();
+                .flow();
+
+        currentFlow.print();
 
 
-        List<String> results = null;
-        try {
-            results = getResults(resultQueue, elements, flushSeconds, TimeUnit.SECONDS);
-            assertEquals(results.size(), elements, "Elements are:" + results.size() + " expected " + elements);
-        } catch (InterruptedException e) {
-            fail();
-        }finally {
-            //currentFlow.destroy();
-        }
+        System.out.println("-----------------\n");
+
+
+        currentFlow = QuasarFlow.newFlow(QSettings.test())
+                .broadcastEmitter(stringEmitter, "stringEmitter")
+                .addProcessor("stringProcessor1", p -> p.process().addConsumer("c1").consume(e -> {}))
+                .addProcessor("stringProcessor2", p -> p.process().addConsumer("c2").consume(e -> {}))
+                .flow();
+
+        currentFlow.print();
+
+
+        System.out.println("-----------------\n");
+
+
+        currentFlow = QuasarFlow.newFlow(QSettings.test())
+                .broadcastEmitter(stringEmitter, "stringEmitter")
+                .addProcessor("stringProcessor1", p -> p.process().addConsumer("c1").consume(e -> {}))
+                .addProcessor("stringProcessor2", p -> p.process().addConsumer("c2").consume(e -> {}))
+                .addProcessor("stringToIntProcessor")
+                .process(() -> String::length)
+                .map(emitter -> emitter
+                        .addProcessor("intToStringProcessor")
+                        .process(() -> integer -> "Length is: "+integer))
+                .flow();
+
+        currentFlow.print();
+
+
+        System.out.println("-----------------\n");
+
+
+        currentFlow = QuasarFlow.newFlow(QSettings.test())
+                .broadcastEmitter(stringEmitter, "stringEmitter")
+                .addProcessor("stringProcessor1",
+                        p -> p
+                                .process()
+                                .addConsumer("c1")
+                                .consume(e -> {}))
+                .addProcessor("stringProcessor2",
+                        p -> p
+                                .process()
+                                .addConsumer("c2")
+                                .consume(e -> {}))
+                .addProcessor("stringProcessor3",
+                        p -> p
+                                .process(() -> String::length)
+                                .broadcast()
+                                .addProcessor("intProcessor1",
+                                    p1 -> p1
+                                            .process()
+                                            .addConsumer("cInt1")
+                                            .consume(e -> {}))
+                                .addProcessor("intProcessor2",
+                                    p2 -> p2
+                                            .process()
+                                            .addConsumer("cInt2")
+                                            .consume(e -> {})))
+                .addProcessor("stringProcessor4",
+                        p -> p
+                                .process()
+                                .routed(o -> QRoutingKey.withKey(o.charAt(6)+""))
+                                .addProcessor("processor0", QRoutingKey.withKey("0"), p1 -> p1.process().addConsumer("c2").consume(e -> {}))
+                                .addProcessor("processor1", QRoutingKey.withKey("1"), p1 -> p1.process().addConsumer("c2").consume(e -> {})))
+                .map(emitter ->
+                        emitter
+                        .addProcessor("intProcessorMapped").process(() -> String::length)
+                )
+
+
+                .flow();
+
+        currentFlow.start();
+
+        Thread.sleep(1000);
+
+        currentFlow.printMetrics();
 
 
     }

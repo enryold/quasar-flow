@@ -3,31 +3,31 @@ package it.enryold.quasarflow.abstracts;
 import co.paralleluniverse.fibers.Fiber;
 import co.paralleluniverse.fibers.SuspendExecution;
 import co.paralleluniverse.strands.SuspendableRunnable;
-import co.paralleluniverse.strands.channels.*;
+import co.paralleluniverse.strands.channels.Channel;
+import co.paralleluniverse.strands.channels.Channels;
+import co.paralleluniverse.strands.channels.ReceivePort;
+import co.paralleluniverse.strands.channels.SendPort;
 import co.paralleluniverse.strands.channels.reactivestreams.ReactiveStreams;
-import it.enryold.quasarflow.enums.QMetricType;
 import it.enryold.quasarflow.interfaces.*;
-import it.enryold.quasarflow.models.metrics.FnBuildMetric;
-import it.enryold.quasarflow.models.metrics.QMetric;
+import it.enryold.quasarflow.models.utils.QEmitterChannel;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
-import it.enryold.quasarflow.models.utils.QSettings;
 import org.reactivestreams.Publisher;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-public abstract class AbstractEmitter<T> extends AbstractFlowable<T> implements IEmitter<T> {
+public abstract class AbstractEmitter<T> extends AbstractFlowable implements IEmitter<T> {
 
     protected Channel<T> emitterTaskChannel;
     private Fiber emitterTaskStrand;
     private Publisher<T> emitterTaskPublisher;
     final private Map<String, List<Channel<T>>> channels = new HashMap<>();
-    private Channel<QMetric> metricChannel;
     private IEmitterTask<T> task;
-    private QSettings settings;
     private Fiber dispatcher;
     private IRoutingKeyExtractor<T> extractorFunction;
-    protected IFlow flow;
 
 
     public AbstractEmitter(IFlow flow){
@@ -41,12 +41,9 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable<T> implements 
         flow.addStartable(this);
     }
 
-
-
     @Override
-    public <I extends IFlowable<T>> I withMetricChannel(Channel<QMetric> metricChannel) {
-        this.metricChannel = metricChannel;
-        return (I)this;
+    public IFlowable parent() {
+        return null;
     }
 
     public <E extends IEmitter<T>> E broadcast(){
@@ -62,11 +59,11 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable<T> implements 
     {
         this.task = task;
         emitterTaskChannel = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
+
+        final QEmitterChannel<T> qEmitterChannel = new QEmitterChannel<>(emitterTaskChannel, t -> producedElements.incrementAndGet());
+
         emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> { if(task != null){
-            if(metricChannel != null){
-                metricChannel.send(new FnBuildMetric().create(this, QMetricType.PRODUCED.name(), 1L));
-            }
-            task.emit(emitterTaskChannel);
+            task.emitOn(qEmitterChannel);
         }
         });
         emitterTaskPublisher = ReactiveStreams.toPublisher(emitterTaskChannel);
@@ -78,11 +75,11 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable<T> implements 
         this.task = task;
         this.extractorFunction = extractor;
         emitterTaskChannel = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
+
+        final QEmitterChannel<T> qEmitterChannel = new QEmitterChannel<>(emitterTaskChannel, t -> producedElements.incrementAndGet());
+
         emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> { if(task != null){
-            if(metricChannel != null){
-                metricChannel.send(new FnBuildMetric().create(this, QMetricType.PRODUCED.name(), 1L));
-            }
-            task.emit(emitterTaskChannel);
+            task.emitOn(qEmitterChannel);
         } });
         emitterTaskPublisher = ReactiveStreams.toPublisher(emitterTaskChannel);
         return (E)this;
@@ -100,6 +97,7 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable<T> implements 
     public IEmitter<T> addProcessor(Injector<IProcessor<T>> processorInjector){
         IEmitter<T> emitter = currentInstance();
         IProcessor<T> processor = addProcessor();
+        flow.setNested(processor);
         processorInjector.accept(processor);
         return emitter;
     }
@@ -108,6 +106,7 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable<T> implements 
     public IEmitter<T> addProcessor(String name, Injector<IProcessor<T>> processorInjector){
         IEmitter<T> emitter = currentInstance();
         IProcessor<T> processor = addProcessor(name);
+        flow.setNested(processor);
         processorInjector.accept(processor);
         return emitter;
     }
@@ -116,6 +115,7 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable<T> implements 
     public IEmitter<T> addProcessor(QRoutingKey routingKey, Injector<IProcessor<T>> processorInjector){
         IEmitter<T> emitter = currentInstance();
         IProcessor<T> processor = addProcessor(routingKey);
+        flow.setNested(processor);
         processorInjector.accept(processor);
         return emitter;
     }
@@ -124,14 +124,23 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable<T> implements 
     public IEmitter<T> addProcessor(String name, QRoutingKey routingKey, Injector<IProcessor<T>> processorInjector){
         IEmitter<T> emitter = currentInstance();
         IProcessor<T> processor = addProcessor(name, routingKey);
+        flow.setNested(processor);
         processorInjector.accept(processor);
         return emitter;
+    }
+
+    @Override
+    public <O> IFlatProcessor<O> addFlatProcessor(String name) {
+        IFlatProcessor<O> flatProcessor = this.addFlatProcessor();
+        flatProcessor.setName(name);
+        return flatProcessor;
     }
 
     @Override
     public IEmitter<T> addConsumer(Injector<IConsumer<T>> consumerInjector) {
         IEmitter<T> emitter = currentInstance();
         IConsumer<T> consumer = addConsumer();
+        flow.setNested(consumer);
         consumerInjector.accept(consumer);
         return emitter;
     }
@@ -140,13 +149,16 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable<T> implements 
     public IEmitter<T> addConsumer(String name, Injector<IConsumer<T>> consumerInjector) {
         IEmitter<T> emitter = currentInstance();
         IConsumer<T> consumer = addConsumer(name);
+        flow.setNested(consumer);
         consumerInjector.accept(consumer);
         return emitter;
     }
 
     @Override
     public <S> IEmitter<S> map(InjectorEmitter<T, S> injector){
-        return injector.injectEmitter(currentInstance());
+        IEmitter<S> emitter = injector.injectEmitter(currentInstance());
+        flow.setNested(emitter);
+        return emitter;
     }
 
 
@@ -154,6 +166,7 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable<T> implements 
     public IEmitter<T> consume(InjectorConsumer<T> injector) {
         IEmitter<T> emitter = currentInstance();
         injector.injectConsumer(emitter);
+        flow.setParentNested();
         return emitter;
     }
 
@@ -161,6 +174,7 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable<T> implements 
     public <S extends IConsumer<T>> S addConsumer(String name) {
         S consumer = addConsumer();
         consumer.setName(name);
+        flow.setParentNested();
         return consumer;
     }
 
@@ -292,7 +306,7 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable<T> implements 
 
     @Override
     public String toString() {
-        return "EMITTER: "+((name == null) ? this.hashCode() : name);
+        return "Emitter: "+this.getName();
     }
 
 }

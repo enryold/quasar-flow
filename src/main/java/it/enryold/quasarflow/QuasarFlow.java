@@ -1,10 +1,11 @@
 package it.enryold.quasarflow;
 
-import co.paralleluniverse.strands.channels.Channel;
-import it.enryold.quasarflow.interfaces.*;
+import it.enryold.quasarflow.interfaces.IEmitter;
+import it.enryold.quasarflow.interfaces.IEmitterTask;
+import it.enryold.quasarflow.interfaces.IFlow;
+import it.enryold.quasarflow.interfaces.IRoutingKeyExtractor;
 import it.enryold.quasarflow.models.QEmitter;
 import it.enryold.quasarflow.models.QFlow;
-import it.enryold.quasarflow.models.metrics.QMetric;
 import it.enryold.quasarflow.models.utils.QSettings;
 
 public class QuasarFlow {
@@ -15,8 +16,8 @@ public class QuasarFlow {
     private QuasarFlow(){
         qFlow = new QFlow();
     }
-    private QuasarFlow(QSettings settings, Channel<QMetric> metricChannel){
-        qFlow = new QFlow(settings, metricChannel);
+    private QuasarFlow(QSettings settings){
+        qFlow = new QFlow(settings);
     }
 
 
@@ -24,10 +25,7 @@ public class QuasarFlow {
         return new QuasarFlow();
     }
     public static QuasarFlow newFlow(QSettings settings){
-        return new QuasarFlow(settings, null);
-    }
-    public static QuasarFlow newFlow(QSettings settings, Channel<QMetric> metricChannel){
-        return new QuasarFlow(settings, metricChannel);
+        return new QuasarFlow(settings);
     }
 
 
