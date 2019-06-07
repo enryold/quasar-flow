@@ -2,6 +2,8 @@ package it.enryold.quasarflow.models;
 
 import it.enryold.quasarflow.interfaces.IFlowable;
 import it.enryold.quasarflow.models.metrics.QMetric;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +11,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class QHiearchy {
+
+    protected final Logger log = LoggerFactory.getLogger(getClass());
+
 
     private int index = 0;
     private IFlowable flowable;
@@ -72,7 +77,7 @@ public class QHiearchy {
     protected void print(String prefix, boolean isTail) {
 
 
-        System.out.println(prefix + (isTail ? "└── " : "├── ") + this.getFlowable().getName());
+        log.info(prefix + (isTail ? "└── " : "├── ") + this.getFlowable().getName());
         for (int i = 0; i < nestedFlowables.size() - 1; i++) {
             nestedFlowables.get(i).print(prefix + (isTail ? "    " : "│   "), false);
         }
@@ -98,7 +103,7 @@ public class QHiearchy {
         }
 
 
-        System.out.println(logString+metricString);
+        log.info(logString+metricString);
 
 
         for (int i = 0; i < nestedFlowables.size() - 1; i++) {
@@ -111,11 +116,11 @@ public class QHiearchy {
     }
 
     public void print(){
-        print("", false);
+        print("Flow ", false);
     }
 
     public void printMetrics(){
-        printMetrics("", false);
+        printMetrics("Metrics ", false);
     }
 
 }

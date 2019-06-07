@@ -27,6 +27,10 @@ public class KSQFlow {
         return new KSQFlow(kinesisClientLibConfiguration);
     }
 
+    public static KSQFlow newFlow(KinesisClientLibConfiguration kinesisClientLibConfiguration, QSettings settings){
+        return new KSQFlow(kinesisClientLibConfiguration, settings);
+    }
+
     public KCLEmitter kinesisEmitter(RecordProcessorFactory recordProcessorFactory){
 
         KCLEmitter emitter = new KCLEmitter(flow)
