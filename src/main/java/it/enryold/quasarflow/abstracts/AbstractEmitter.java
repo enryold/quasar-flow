@@ -54,13 +54,16 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable implements IEm
         return this.routedEmitter(task, extractor);
     }
 
+    private QEmitterChannel<T> getInputChannel() {
+        return new QEmitterChannel<>(emitterTaskChannel, t -> producedElements.incrementAndGet());
+    }
 
     public <E extends IEmitter<T>> E broadcastEmitter(IEmitterTask<T> task)
     {
         this.task = task;
         emitterTaskChannel = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
 
-        final QEmitterChannel<T> qEmitterChannel = new QEmitterChannel<>(emitterTaskChannel, t -> producedElements.incrementAndGet());
+        final QEmitterChannel<T> qEmitterChannel = getInputChannel();
 
         emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> { if(task != null){
             task.emitOn(qEmitterChannel);
@@ -76,7 +79,7 @@ public abstract class AbstractEmitter<T> extends AbstractFlowable implements IEm
         this.extractorFunction = extractor;
         emitterTaskChannel = Channels.newChannel(settings.getBufferSize(), settings.getOverflowPolicy());
 
-        final QEmitterChannel<T> qEmitterChannel = new QEmitterChannel<>(emitterTaskChannel, t -> producedElements.incrementAndGet());
+        final QEmitterChannel<T> qEmitterChannel = getInputChannel();
 
         emitterTaskStrand = new Fiber<Void>((SuspendableRunnable) () -> { if(task != null){
             task.emitOn(qEmitterChannel);

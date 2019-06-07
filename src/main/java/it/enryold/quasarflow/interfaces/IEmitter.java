@@ -1,6 +1,7 @@
 package it.enryold.quasarflow.interfaces;
 
 import co.paralleluniverse.strands.channels.Channel;
+import it.enryold.quasarflow.models.utils.QEmitterChannel;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
 import org.reactivestreams.Publisher;
 
