@@ -93,7 +93,7 @@ public abstract class AbstractFlatProcessor<E> extends AbstractFlowable implemen
 
     protected ReceivePort<E> buildProcessor(Publisher<List<E>> publisher)
     {
-        final Processor<List<E>, E> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<List<E>>, SendPort<E>>) (in, out) -> {
+        final Processor<List<E>, E> processor = ReactiveStreams.toProcessor(10, Channels.OverflowPolicy.BLOCK, (SuspendableAction2<ReceivePort<List<E>>, SendPort<E>>) (in, out) -> {
             for (; ; ) {
                 List<E> xs = in.receive();
                 if (xs == null)
@@ -122,7 +122,7 @@ public abstract class AbstractFlatProcessor<E> extends AbstractFlowable implemen
                 .toArray((IntFunction<Channel<List<E>>[]>) Channel[]::new);
 
 
-        final ReceivePort<List<E>> roundRobinSubscriberChannel = ReactiveStreams.subscribe(settings.getBufferSize(), settings.getOverflowPolicy(), this.emitter.getPublisher(routingKey));
+        final ReceivePort<List<E>> roundRobinSubscriberChannel = ReactiveStreams.subscribe(10, Channels.OverflowPolicy.BLOCK, this.emitter.getPublisher(routingKey));
         dispatcherStrand = new Fiber<>((SuspendableRunnable) () -> {
 
             int index = 0;
@@ -174,7 +174,7 @@ public abstract class AbstractFlatProcessor<E> extends AbstractFlowable implemen
                 try {
                     I x = channel.receive();
                     if (x == null)
-                        break;
+                    continue;
                     publisherChannel.sendOnChannel(x);
                 } catch (InterruptedException e) {
                     log("buildEmitterTask Strand interrupted: " + Strand.currentStrand().getName());
