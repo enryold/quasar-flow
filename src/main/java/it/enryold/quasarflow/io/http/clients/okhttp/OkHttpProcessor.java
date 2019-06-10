@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 public class OkHttpProcessor<T> extends AbstractIOProcessor<OkHttpRequest<T>, OkHttpResponse<T>> {
 
     private OkHttpClient okHttpClient = defaultClient();
+    private boolean didLogRequests = false;
 
     public OkHttpProcessor(IEmitter<OkHttpRequest<T>> eEmitter, String name, QRoutingKey routingKey, boolean async) {
         super(eEmitter, name, routingKey);
@@ -46,6 +47,11 @@ public class OkHttpProcessor<T> extends AbstractIOProcessor<OkHttpRequest<T>, Ok
         return this;
     }
 
+    public OkHttpProcessor<T> withDidLogRequests(boolean didLogRequests){
+        this.didLogRequests = didLogRequests;
+        return this;
+    }
+
 
     private void init(boolean async){
         if(async)
@@ -65,7 +71,7 @@ public class OkHttpProcessor<T> extends AbstractIOProcessor<OkHttpRequest<T>, Ok
                                     } catch (SuspendExecution | InterruptedException suspendExecution) {
                                         suspendExecution.printStackTrace();
                                     }
-                                }));
+                                }, didLogRequests));
     }
 
     private void initSync(){
@@ -74,21 +80,18 @@ public class OkHttpProcessor<T> extends AbstractIOProcessor<OkHttpRequest<T>, Ok
                 (IOProcessorAsyncTask<OkHttpRequest<T>, OkHttpResponse<T>>)
                         (elm, sendPort) -> {
 
-                            final OkHttpRequestCallback<T> callback = new OkHttpRequestCallback<>(elm.getAttachedDatas(), tOkHttpResponse -> {
-                                try {
-                                    sendPort.send(tOkHttpResponse);
-                                } catch (SuspendExecution | InterruptedException suspendExecution) {
-                                    suspendExecution.printStackTrace();
-                                }
-                            });
-
                             new Fiber<Void>((SuspendableRunnable) () -> {
 
-
-                                final Response response;
+                                final OkHttpRequestCallback<T> callback = new OkHttpRequestCallback<>(elm.getAttachedDatas(), tOkHttpResponse -> {
+                                    try {
+                                        sendPort.send(tOkHttpResponse);
+                                    } catch (SuspendExecution | InterruptedException suspendExecution) {
+                                        suspendExecution.printStackTrace();
+                                    }
+                                }, didLogRequests);
 
                                 try {
-                                    response = okHttpClient.newCall(elm.getRequest()).execute();
+                                    final Response response = okHttpClient.newCall(elm.getRequest()).execute();
 
                                     if (response.code() >= 200 && response.code() < 300) {
                                         callback.onResponse(response);

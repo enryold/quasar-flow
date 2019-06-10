@@ -16,10 +16,16 @@ public class OkHttpRequestCallback<T> implements Callback
     private long start;
     private Consumer<OkHttpResponse<T>> consumer;
     private T attachedDatas;
+    private boolean didLogRequests;
 
     public OkHttpRequestCallback(T attachedDatas, Consumer<OkHttpResponse<T>> consumer) {
+        this(attachedDatas, consumer, false);
+    }
+
+    public OkHttpRequestCallback(T attachedDatas, Consumer<OkHttpResponse<T>> consumer, boolean didLogRequests) {
         this.consumer = consumer;
         this.attachedDatas = attachedDatas;
+        this.didLogRequests = didLogRequests;
         start = System.currentTimeMillis();
     }
 
@@ -53,10 +59,19 @@ public class OkHttpRequestCallback<T> implements Callback
 
         String requestId = response.request().header(QHttpConsts.REQUEST_HEADER);
 
-        log.debug("["+requestId+"] HTTP async request to "+response.request().url().toString()+" executed in "+execution+" ms ");
+        logRequest("["+requestId+"] HTTP async request to "+response.request().url().toString()+" executed in "+execution+" ms ");
 
         consumer.accept(OkHttpResponse.success(requestId, execution, response, attachedDatas));
 
+    }
+
+
+    private void logRequest(String message){
+        if(didLogRequests){
+            log.info(message);
+        }else{
+            log.debug(message);
+        }
     }
 
 
