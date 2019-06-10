@@ -37,7 +37,7 @@ public class ApacheHttpProcessor<T> extends AbstractIOProcessor<ApacheHttpReques
         init();
     }
 
-    public ApacheHttpProcessor<T> withOkHttpClient(CloseableHttpAsyncClient httpClient){
+    public ApacheHttpProcessor<T> withAHCClient(CloseableHttpAsyncClient httpClient){
         this.client = new FiberHttpClient(httpClient);
         return this;
     }
