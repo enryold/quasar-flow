@@ -82,14 +82,12 @@ public abstract class AbstractConsumer<E> extends AbstractFlowable implements IC
         Publisher<E> publisher = emitter.getPublisher();
 
         Processor<E, E> processor = ReactiveStreams.toProcessor(10, Channels.OverflowPolicy.BLOCK, (SuspendableAction2<ReceivePort<E>, SendPort<E>>) (in, out) -> {
-            for (; ; ) {
-                E x = in.receive();
-                if (x == null)
-                    continue;
 
+            for (E x; ((x = in.receive()) != null); ) {
                 receivedElements.incrementAndGet();
                 out.send(x);
             }
+            out.close();
         });
         publisher.subscribe(processor);
         return ReactiveStreams.subscribe(settings.getBufferSize(), settings.getOverflowPolicy(), processor);

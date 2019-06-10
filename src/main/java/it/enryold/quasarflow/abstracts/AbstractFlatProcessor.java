@@ -94,17 +94,14 @@ public abstract class AbstractFlatProcessor<E> extends AbstractFlowable implemen
     protected ReceivePort<E> buildProcessor(Publisher<List<E>> publisher)
     {
         final Processor<List<E>, E> processor = ReactiveStreams.toProcessor(10, Channels.OverflowPolicy.BLOCK, (SuspendableAction2<ReceivePort<List<E>>, SendPort<E>>) (in, out) -> {
-            for (; ; ) {
-                List<E> xs = in.receive();
-                if (xs == null)
-                    break;
+
+            for (List<E> x; ((x = in.receive()) != null); ) {
                 receivedElements.incrementAndGet();
-
-
-                for(E x : xs){
-                    out.send(x);
+                for(E xf : x){
+                    out.send(xf);
                 }
             }
+            out.close();
         });
         publisher.subscribe(processor);
         return ReactiveStreams.subscribe(settings.getBufferSize(), settings.getOverflowPolicy(), processor);
