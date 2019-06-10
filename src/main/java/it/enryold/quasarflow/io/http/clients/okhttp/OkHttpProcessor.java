@@ -80,31 +80,27 @@ public class OkHttpProcessor<T> extends AbstractIOProcessor<OkHttpRequest<T>, Ok
                 (IOProcessorAsyncTask<OkHttpRequest<T>, OkHttpResponse<T>>)
                         (elm, sendPort) -> {
 
-                            new Fiber<Void>((SuspendableRunnable) () -> {
-
-                                final OkHttpRequestCallback<T> callback = new OkHttpRequestCallback<>(elm.getAttachedDatas(), tOkHttpResponse -> {
-                                    try {
-                                        sendPort.send(tOkHttpResponse);
-                                    } catch (SuspendExecution | InterruptedException suspendExecution) {
-                                        suspendExecution.printStackTrace();
-                                    }
-                                }, didLogRequests);
-
+                            final OkHttpRequestCallback<T> callback = new OkHttpRequestCallback<>(elm.getAttachedDatas(), tOkHttpResponse -> {
                                 try {
-                                    final Response response = okHttpClient.newCall(elm.getRequest()).execute();
+                                    sendPort.send(tOkHttpResponse);
+                                } catch (SuspendExecution | InterruptedException suspendExecution) {
+                                    suspendExecution.printStackTrace();
+                                }
+                            }, didLogRequests);
 
-                                    if (response.code() >= 200 && response.code() < 300) {
-                                        callback.onResponse(response);
-                                    }else{
-                                        callback.onFailure(elm.getRequest(), response, new IOException("Status is:"+response.code()));
-                                    }
+                            try {
+                                final Response response = okHttpClient.newCall(elm.getRequest()).execute();
 
-                                    } catch (IOException e) {
-                                    e.printStackTrace();
-                                    callback.onFailure(elm.getRequest(),e);
+                                if (response.code() >= 200 && response.code() < 300) {
+                                    callback.onResponse(response);
+                                }else{
+                                    callback.onFailure(elm.getRequest(), response, new IOException("Status is:"+response.code()));
                                 }
 
-                            }).start();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                callback.onFailure(elm.getRequest(),e);
+                            }
                         };
 
     }

@@ -107,11 +107,9 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable implements I
     {
         final ITransform<E, T> transform = transformFactory.build();
 
-        Processor<E, T> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<T>>) (in, out) -> {
-            for (; ; ) {
-                E x = in.receive();
-                if (x == null)
-                    break;
+        Processor<E, T> processor = ReactiveStreams.toProcessor(10, Channels.OverflowPolicy.BLOCK, (SuspendableAction2<ReceivePort<E>, SendPort<T>>) (in, out) -> {
+
+            for (E x; ((x = in.receive()) != null); ) {
                 receivedElements.incrementAndGet();
 
                 T o = transform.apply(x);
@@ -119,6 +117,7 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable implements I
                     out.send(o);
                 }
             }
+            out.close();
         });
         publisher.subscribe(processor);
         return ReactiveStreams.subscribe(settings.getBufferSize(), settings.getOverflowPolicy(), processor);
@@ -127,15 +126,13 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable implements I
 
     protected ReceivePort<E> buildProcessor(Publisher<E> publisher)
     {
-        final Processor<E, E> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<E>>) (in, out) -> {
-            for (; ; ) {
-                E x = in.receive();
-                if (x == null)
-                    break;
-                receivedElements.incrementAndGet();
+        final Processor<E, E> processor = ReactiveStreams.toProcessor(10, Channels.OverflowPolicy.BLOCK, (SuspendableAction2<ReceivePort<E>, SendPort<E>>) (in, out) -> {
 
+            for (E x; ((x = in.receive()) != null); ) {
+                receivedElements.incrementAndGet();
                 out.send(x);
             }
+            out.close();
         });
         publisher.subscribe(processor);
         return ReactiveStreams.subscribe(settings.getBufferSize(), settings.getOverflowPolicy(), processor);
@@ -147,8 +144,10 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable implements I
                                                                 int flushTimeout,
                                                                 TimeUnit flushTimeUnit)
     {
-        final Processor<E, List<E>> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<List<E>>>) (in, out) -> {
+        final Processor<E, List<E>> processor = ReactiveStreams.toProcessor(10, Channels.OverflowPolicy.BLOCK, (SuspendableAction2<ReceivePort<E>, SendPort<List<E>>>) (in, out) -> {
             List<E> collection = new ArrayList<>();
+
+
 
             for(;;){
                 E x;
@@ -193,7 +192,7 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable implements I
                                                                    int flushTimeout,
                                                                    TimeUnit flushTimeUnit)
     {
-        final Processor<E, List<T>> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<List<T>>>) (in, out) -> {
+        final Processor<E, List<T>> processor = ReactiveStreams.toProcessor(10, Channels.OverflowPolicy.BLOCK, (SuspendableAction2<ReceivePort<E>, SendPort<List<T>>>) (in, out) -> {
 
             IAccumulator<E, T> accumulator = accumulatorFactory.build();
 
@@ -303,7 +302,7 @@ public abstract class AbstractProcessor<E> extends AbstractFlowable implements I
                 try {
                     I x = channel.receive();
                     if (x == null)
-                        break;
+                        continue;
 
                     publisherChannel.sendOnChannel(x);
                 } catch (InterruptedException e) {

@@ -109,17 +109,16 @@ public abstract class AbstractIOProcessor<E, O> extends AbstractFlowable impleme
 
     private ReceivePort<O> buildProcessor(Publisher<E> publisher)
     {
+        IOProcessorAsyncTask<E, O> taskFactory = processorAsyncTaskBuilder.build();
+        final Processor<E, O> processor = ReactiveStreams.toProcessor(10, Channels.OverflowPolicy.BLOCK, (SuspendableAction2<ReceivePort<E>, SendPort<O>>) (in, out) -> {
 
 
-        final Processor<E, O> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<O>>) (in, out) -> {
-            for (; ; ) {
-                E x = in.receive();
-                if (x == null)
-                    break;
+            for (E x; ((x = in.receive()) != null); ) {
                 receivedElements.incrementAndGet();
-
-                processorAsyncTaskBuilder.build().async(x, out);
+                taskFactory.async(x, out);
             }
+            out.close();
+
         });
         publisher.subscribe(processor);
         return ReactiveStreams.subscribe(settings.getBufferSize(), settings.getOverflowPolicy(), processor);
@@ -189,7 +188,7 @@ public abstract class AbstractIOProcessor<E, O> extends AbstractFlowable impleme
                 try {
                     I x = channel.receive();
                     if (x == null)
-                        break;
+                    continue;
 
                     publisherChannel.sendOnChannel(x);
                 } catch (InterruptedException e) {

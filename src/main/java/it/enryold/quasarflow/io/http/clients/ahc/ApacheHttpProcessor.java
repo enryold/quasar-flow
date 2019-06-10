@@ -48,32 +48,28 @@ public class ApacheHttpProcessor<T> extends AbstractIOProcessor<ApacheHttpReques
                 (IOProcessorAsyncTask<ApacheHttpRequest<T>, ApacheHttpResponse<T>>)
                         (elm, sendPort) -> {
 
-                            new Fiber<Void>((SuspendableRunnable) () -> {
+                            final CloseableHttpResponse response;
 
-                                final CloseableHttpResponse response;
+                            try {
+                                long start = System.currentTimeMillis();
+                                response = client.execute(elm.getRequest());
+                                long execution = (System.currentTimeMillis() - start);
+                                int status = response.getStatusLine().getStatusCode();
 
-                                try {
-                                    long start = System.currentTimeMillis();
-                                    response = client.execute(elm.getRequest());
-                                    long execution = (System.currentTimeMillis() - start);
-                                    int status = response.getStatusLine().getStatusCode();
-
-                                    if (status >= 200 && status < 300) {
-                                        log("HTTP request to " + elm.getRequest().getURI() + " executed in " + execution + " ms with status: " + status);
-                                        sendPort.send(ApacheHttpResponse.success(elm.getRequestId(), execution, response, elm.getAttachedDatas()));
-                                    } else {
-                                        error("HTTP request to " + elm.getRequest().getURI() + " FAIL in " + execution + " ms with status: " + status);
-                                        sendPort.send(ApacheHttpResponse.error(elm.getRequestId(), execution, response, elm.getAttachedDatas()));
+                                if (status >= 200 && status < 300) {
+                                    log("HTTP request to " + elm.getRequest().getURI() + " executed in " + execution + " ms with status: " + status);
+                                    sendPort.send(ApacheHttpResponse.success(elm.getRequestId(), execution, response, elm.getAttachedDatas()));
+                                } else {
+                                    error("HTTP request to " + elm.getRequest().getURI() + " FAIL in " + execution + " ms with status: " + status);
+                                    sendPort.send(ApacheHttpResponse.error(elm.getRequestId(), execution, response, elm.getAttachedDatas()));
 
 
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    error("HTTP request ERROR:" + e.getMessage());
-                                    throw new RuntimeException(e);
                                 }
-
-                            }).start();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                error("HTTP request ERROR:" + e.getMessage());
+                                throw new RuntimeException(e);
+                            }
 
                         };
     }
