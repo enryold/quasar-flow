@@ -81,7 +81,7 @@ public abstract class AbstractConsumer<E> extends AbstractFlowable implements IC
     {
         Publisher<E> publisher = emitter.getPublisher();
 
-        Processor<E, E> processor = ReactiveStreams.toProcessor(10, Channels.OverflowPolicy.BLOCK, (SuspendableAction2<ReceivePort<E>, SendPort<E>>) (in, out) -> {
+        Processor<E, E> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<E>>) (in, out) -> {
 
             for (E x; ((x = in.receive()) != null); ) {
                 receivedElements.incrementAndGet();
@@ -129,7 +129,7 @@ public abstract class AbstractConsumer<E> extends AbstractFlowable implements IC
                                                                 TimeUnit flushTimeUnit)
     {
 
-        final Processor<E, List<E>> processor = ReactiveStreams.toProcessor(10, Channels.OverflowPolicy.BLOCK, (SuspendableAction2<ReceivePort<E>, SendPort<List<E>>>) (in, out) -> {
+        final Processor<E, List<E>> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<List<E>>>) (in, out) -> {
             List<E> collection = new ArrayList<>();
 
             for(;;){
@@ -177,7 +177,7 @@ public abstract class AbstractConsumer<E> extends AbstractFlowable implements IC
                                                                    TimeUnit flushTimeUnit)
     {
 
-        final Processor<E, List<T>> processor = ReactiveStreams.toProcessor(10, Channels.OverflowPolicy.BLOCK, (SuspendableAction2<ReceivePort<E>, SendPort<List<T>>>) (in, out) -> {
+        final Processor<E, List<T>> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<List<T>>>) (in, out) -> {
 
             IAccumulator<E, T> accumulator = accumulatorFactory.build();
 

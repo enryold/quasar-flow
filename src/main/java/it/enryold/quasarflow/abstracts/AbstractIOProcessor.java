@@ -110,7 +110,7 @@ public abstract class AbstractIOProcessor<E, O> extends AbstractFlowable impleme
     private ReceivePort<O> buildProcessor(Publisher<E> publisher)
     {
         IOProcessorAsyncTask<E, O> taskFactory = processorAsyncTaskBuilder.build();
-        final Processor<E, O> processor = ReactiveStreams.toProcessor(10, Channels.OverflowPolicy.BLOCK, (SuspendableAction2<ReceivePort<E>, SendPort<O>>) (in, out) -> {
+        final Processor<E, O> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<O>>) (in, out) -> {
 
 
             for (E x; ((x = in.receive()) != null); ) {

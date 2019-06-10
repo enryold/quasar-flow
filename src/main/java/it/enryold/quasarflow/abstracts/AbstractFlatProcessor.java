@@ -93,7 +93,7 @@ public abstract class AbstractFlatProcessor<E> extends AbstractFlowable implemen
 
     protected ReceivePort<E> buildProcessor(Publisher<List<E>> publisher)
     {
-        final Processor<List<E>, E> processor = ReactiveStreams.toProcessor(10, Channels.OverflowPolicy.BLOCK, (SuspendableAction2<ReceivePort<List<E>>, SendPort<E>>) (in, out) -> {
+        final Processor<List<E>, E> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<List<E>>, SendPort<E>>) (in, out) -> {
 
             for (List<E> x; ((x = in.receive()) != null); ) {
                 receivedElements.incrementAndGet();
@@ -119,7 +119,7 @@ public abstract class AbstractFlatProcessor<E> extends AbstractFlowable implemen
                 .toArray((IntFunction<Channel<List<E>>[]>) Channel[]::new);
 
 
-        final ReceivePort<List<E>> roundRobinSubscriberChannel = ReactiveStreams.subscribe(10, Channels.OverflowPolicy.BLOCK, this.emitter.getPublisher(routingKey));
+        final ReceivePort<List<E>> roundRobinSubscriberChannel = ReactiveStreams.subscribe(settings.getBufferSize(), settings.getOverflowPolicy(), this.emitter.getPublisher(routingKey));
         dispatcherStrand = new Fiber<>((SuspendableRunnable) () -> {
 
             int index = 0;
