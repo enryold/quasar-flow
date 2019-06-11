@@ -1,17 +1,14 @@
 package it.enryold.quasarflow.io.http.clients.okhttp;
 
-import co.paralleluniverse.fibers.Fiber;
-import co.paralleluniverse.fibers.SuspendExecution;
 import co.paralleluniverse.fibers.okhttp.FiberOkHttpClient;
-import co.paralleluniverse.strands.SuspendableRunnable;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Response;
 import it.enryold.quasarflow.abstracts.AbstractIOProcessor;
 import it.enryold.quasarflow.interfaces.IEmitter;
-import it.enryold.quasarflow.interfaces.IOProcessorAsyncTask;
+import it.enryold.quasarflow.interfaces.IOProcessorTask;
 import it.enryold.quasarflow.io.http.clients.okhttp.models.OkHttpRequest;
-import it.enryold.quasarflow.io.http.clients.okhttp.models.OkHttpRequestCallback;
 import it.enryold.quasarflow.io.http.clients.okhttp.models.OkHttpResponse;
+import it.enryold.quasarflow.io.http.consts.QHttpConsts;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
 
 import java.io.IOException;
@@ -22,24 +19,19 @@ public class OkHttpProcessor<T> extends AbstractIOProcessor<OkHttpRequest<T>, Ok
     private OkHttpClient okHttpClient = defaultClient();
     private boolean didLogRequests = false;
 
-    public OkHttpProcessor(IEmitter<OkHttpRequest<T>> eEmitter, String name, QRoutingKey routingKey, boolean async) {
+    public OkHttpProcessor(IEmitter<OkHttpRequest<T>> eEmitter, String name, QRoutingKey routingKey) {
         super(eEmitter, name, routingKey);
-        init(async);
+        init();
     }
 
-    public OkHttpProcessor(IEmitter<OkHttpRequest<T>> eEmitter, QRoutingKey routingKey, boolean async) {
+    public OkHttpProcessor(IEmitter<OkHttpRequest<T>> eEmitter, QRoutingKey routingKey) {
         super(eEmitter, routingKey);
-        init(async);
-    }
-
-    public OkHttpProcessor(IEmitter<OkHttpRequest<T>> eEmitter, boolean async) {
-        super(eEmitter);
-        init(async);
+        init();
     }
 
     public OkHttpProcessor(IEmitter<OkHttpRequest<T>> eEmitter) {
         super(eEmitter);
-        init(false);
+        init();
     }
 
     public OkHttpProcessor<T> withOkHttpClient(OkHttpClient okHttpClient){
@@ -53,56 +45,48 @@ public class OkHttpProcessor<T> extends AbstractIOProcessor<OkHttpRequest<T>, Ok
     }
 
 
-    private void init(boolean async){
-        if(async)
-            initAsync();
-        else
-            initSync();
+    private void init(){
+        initSync();
     }
 
 
-    private void initAsync(){
-        processorAsyncTaskBuilder = () ->
-                (IOProcessorAsyncTask<OkHttpRequest<T>, OkHttpResponse<T>>)
-                        (elm, sendPort) -> okHttpClient.newCall(elm.getRequest())
-                                .enqueue(new OkHttpRequestCallback<>(elm.getAttachedDatas(), okHttpResponse -> {
-                                    try {
-                                        sendPort.send(okHttpResponse);
-                                    } catch (SuspendExecution | InterruptedException suspendExecution) {
-                                        suspendExecution.printStackTrace();
-                                    }
-                                }, didLogRequests));
-    }
 
     private void initSync(){
-        processorAsyncTaskBuilder = () ->
+        processorTaskBuilder = () ->
 
-                (IOProcessorAsyncTask<OkHttpRequest<T>, OkHttpResponse<T>>)
-                        (elm, sendPort) -> {
+                (IOProcessorTask<OkHttpRequest<T>, OkHttpResponse<T>>)
+                        (elm) -> {
 
-                            final OkHttpRequestCallback<T> callback = new OkHttpRequestCallback<>(elm.getAttachedDatas(), tOkHttpResponse -> {
-                                try {
-                                    sendPort.send(tOkHttpResponse);
-                                } catch (SuspendExecution | InterruptedException suspendExecution) {
-                                    suspendExecution.printStackTrace();
-                                }
-                            }, didLogRequests);
+                            long start = System.currentTimeMillis();
 
                             try {
                                 final Response response = okHttpClient.newCall(elm.getRequest()).execute();
+                                long execution = System.currentTimeMillis()-start;
+
 
                                 if (response.code() >= 200 && response.code() < 300) {
-                                    callback.onResponse(response);
+                                    logRequest("["+elm.getRequestId()+"] HTTP async request to "+response.request().url().toString()+" executed in "+execution+" ms ");
+
+                                    return OkHttpResponse.success(elm.getRequestId(), execution, response, elm.getAttachedDatas());
                                 }else{
-                                    callback.onFailure(elm.getRequest(), response, new IOException("Status is:"+response.code()));
+                                    return OkHttpResponse.error(elm.getRequestId(), execution, response, elm.getAttachedDatas());
                                 }
 
                             } catch (IOException e) {
                                 e.printStackTrace();
-                                callback.onFailure(elm.getRequest(),e);
+                                return OkHttpResponse.error(elm.getRequestId(), (System.currentTimeMillis()-start), null, elm.getAttachedDatas());
                             }
                         };
 
+    }
+
+
+    private void logRequest(String message){
+        if(didLogRequests){
+            log.info(message);
+        }else{
+            log.debug(message);
+        }
     }
 
 

@@ -17,8 +17,6 @@ import it.enryold.quasarflow.models.utils.QEmitterChannel;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
 import org.reactivestreams.Processor;
 import org.reactivestreams.Publisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +28,6 @@ import java.util.stream.Stream;
 
 public abstract class AbstractIOProcessor<E, O> extends AbstractFlowable implements IOProcessor<E, O> {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
 
 
     final protected List<Fiber<Void>> subscriberStrands = new ArrayList<>();
@@ -41,7 +38,7 @@ public abstract class AbstractIOProcessor<E, O> extends AbstractFlowable impleme
     final private List<ReceivePort<E>> processorChannels = new ArrayList<>();
     private IEmitter<E> emitter;
     private QRoutingKey routingKey;
-    protected IOProcessorAsyncTaskBuilder<E, O> processorAsyncTaskBuilder;
+    protected IOProcessorTaskBuilder<E, O> processorTaskBuilder;
 
 
     public AbstractIOProcessor(IEmitter<E> eEmitter, String name, QRoutingKey routingKey){
@@ -79,8 +76,8 @@ public abstract class AbstractIOProcessor<E, O> extends AbstractFlowable impleme
     }
 
     @Override
-    public IOProcessor<E, O> withAsyncTaskBuilder(IOProcessorAsyncTaskBuilder<E, O> processorAsyncTaskBuilder) {
-        this.processorAsyncTaskBuilder = processorAsyncTaskBuilder;
+    public IOProcessor<E, O> withAsyncTaskBuilder(IOProcessorTaskBuilder<E, O> processorAsyncTaskBuilder) {
+        this.processorTaskBuilder = processorAsyncTaskBuilder;
         return this;
     }
 
@@ -109,13 +106,13 @@ public abstract class AbstractIOProcessor<E, O> extends AbstractFlowable impleme
 
     private ReceivePort<O> buildProcessor(Publisher<E> publisher)
     {
-        IOProcessorAsyncTask<E, O> taskFactory = processorAsyncTaskBuilder.build();
         final Processor<E, O> processor = ReactiveStreams.toProcessor(settings.getBufferSize(), settings.getOverflowPolicy(), (SuspendableAction2<ReceivePort<E>, SendPort<O>>) (in, out) -> {
 
 
             for (E x; ((x = in.receive()) != null); ) {
                 receivedElements.incrementAndGet();
-                taskFactory.async(x, out);
+                O o = processorTaskBuilder.build().sync(x);
+                out.send(o);
             }
             out.close();
 
