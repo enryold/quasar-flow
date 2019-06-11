@@ -55,10 +55,10 @@ public class ApacheHttpProcessor<T> extends AbstractIOProcessor<ApacheHttpReques
                                 int status = response.getStatusLine().getStatusCode();
 
                                 if (status >= 200 && status < 300) {
-                                    log("HTTP request to " + elm.getRequest().getURI() + " executed in " + execution + " ms with status: " + status);
+                                    log("HTTP request with status: "+status+" to " + elm.getRequest().getURI() + " executed in " + execution + " ms with status: " + status);
                                     return ApacheHttpResponse.success(elm.getRequestId(), execution, response, elm.getAttachedDatas());
                                 } else {
-                                    error("HTTP request to " + elm.getRequest().getURI() + " FAIL in " + execution + " ms with status: " + status);
+                                    error("HTTP request with status: "+status+" to " + elm.getRequest().getURI() + " FAIL in " + execution + " ms with status: " + status);
                                     return ApacheHttpResponse.error(elm.getRequestId(), execution, response, elm.getAttachedDatas());
                                 }
                             } catch (Exception e) {
