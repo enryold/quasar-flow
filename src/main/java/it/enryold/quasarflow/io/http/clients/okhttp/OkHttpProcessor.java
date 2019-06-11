@@ -69,11 +69,14 @@ public class OkHttpProcessor<T> extends AbstractIOProcessor<OkHttpRequest<T>, Ok
 
                                     return OkHttpResponse.success(elm.getRequestId(), execution, response, elm.getAttachedDatas());
                                 }else{
+                                    log.error("["+elm.getRequestId()+"] HTTP async request to "+response.request().url().toString()+" FAIL executed in "+execution+" ms ");
+
                                     return OkHttpResponse.error(elm.getRequestId(), execution, response, elm.getAttachedDatas());
                                 }
 
                             } catch (IOException e) {
                                 e.printStackTrace();
+                                log.error("["+elm.getRequestId()+"] HTTP async request FAIL executed in "+(System.currentTimeMillis()-start)+" ms, ex: "+e.getMessage());
                                 return OkHttpResponse.error(elm.getRequestId(), (System.currentTimeMillis()-start), null, elm.getAttachedDatas());
                             }
                         };
