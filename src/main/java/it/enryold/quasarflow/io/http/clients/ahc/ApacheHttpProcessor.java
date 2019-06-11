@@ -1,11 +1,9 @@
 package it.enryold.quasarflow.io.http.clients.ahc;
 
-import co.paralleluniverse.fibers.Fiber;
 import co.paralleluniverse.fibers.httpclient.FiberHttpClient;
-import co.paralleluniverse.strands.SuspendableRunnable;
 import it.enryold.quasarflow.abstracts.AbstractIOProcessor;
 import it.enryold.quasarflow.interfaces.IEmitter;
-import it.enryold.quasarflow.interfaces.IOProcessorAsyncTask;
+import it.enryold.quasarflow.interfaces.IOProcessorTask;
 import it.enryold.quasarflow.io.http.clients.ahc.models.ApacheHttpRequest;
 import it.enryold.quasarflow.io.http.clients.ahc.models.ApacheHttpResponse;
 import it.enryold.quasarflow.models.utils.QRoutingKey;
@@ -44,9 +42,9 @@ public class ApacheHttpProcessor<T> extends AbstractIOProcessor<ApacheHttpReques
 
 
     private void init(){
-        processorAsyncTaskBuilder = () ->
-                (IOProcessorAsyncTask<ApacheHttpRequest<T>, ApacheHttpResponse<T>>)
-                        (elm, sendPort) -> {
+        processorTaskBuilder = () ->
+                (IOProcessorTask<ApacheHttpRequest<T>, ApacheHttpResponse<T>>)
+                        (elm) -> {
 
                             final CloseableHttpResponse response;
 
@@ -58,12 +56,10 @@ public class ApacheHttpProcessor<T> extends AbstractIOProcessor<ApacheHttpReques
 
                                 if (status >= 200 && status < 300) {
                                     log("HTTP request to " + elm.getRequest().getURI() + " executed in " + execution + " ms with status: " + status);
-                                    sendPort.send(ApacheHttpResponse.success(elm.getRequestId(), execution, response, elm.getAttachedDatas()));
+                                    return ApacheHttpResponse.success(elm.getRequestId(), execution, response, elm.getAttachedDatas());
                                 } else {
                                     error("HTTP request to " + elm.getRequest().getURI() + " FAIL in " + execution + " ms with status: " + status);
-                                    sendPort.send(ApacheHttpResponse.error(elm.getRequestId(), execution, response, elm.getAttachedDatas()));
-
-
+                                    return ApacheHttpResponse.error(elm.getRequestId(), execution, response, elm.getAttachedDatas());
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
