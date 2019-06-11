@@ -15,6 +15,10 @@ public class OkHttpResponse<T> extends AbstractHttpResponse<T, Response> {
     @Override
     public void map(Response response) {
 
+        if(response == null){
+            return;
+        }
+
         this.status = response.code();
         this.headers = response.headers().toMultimap();
         try {
