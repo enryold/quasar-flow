@@ -65,11 +65,11 @@ public class OkHttpProcessor<T> extends AbstractIOProcessor<OkHttpRequest<T>, Ok
 
 
                                 if (response.code() >= 200 && response.code() < 300) {
-                                    logRequest("["+elm.getRequestId()+"] HTTP async request to "+response.request().url().toString()+" executed in "+execution+" ms ");
+                                    logRequest("["+elm.getRequestId()+"] HTTP async request with status "+response.code()+" to "+response.request().url().toString()+" executed in "+execution+" ms ");
 
                                     return OkHttpResponse.success(elm.getRequestId(), execution, response, elm.getAttachedDatas());
                                 }else{
-                                    log.error("["+elm.getRequestId()+"] HTTP async request to "+response.request().url().toString()+" FAIL executed in "+execution+" ms ");
+                                    log.error("["+elm.getRequestId()+"] HTTP async request with status "+response.code()+" to "+response.request().url().toString()+" FAIL executed in "+execution+" ms ");
 
                                     return OkHttpResponse.error(elm.getRequestId(), execution, response, elm.getAttachedDatas());
                                 }
