@@ -43,6 +43,12 @@ public class QSettings {
                 .build();
     }
 
+    public static QSettings unbounded() {
+        return new Builder().withBufferSize(-1)
+                .withOverflowPolicy(Channels.OverflowPolicy.THROW)
+                .build();
+    }
+
 
     public static final class Builder {
         private int bufferSize;

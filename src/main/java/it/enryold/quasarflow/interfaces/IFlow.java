@@ -15,5 +15,6 @@ public interface IFlow {
     void destroy();
     void print();
     void printMetrics();
+    void printMetrics(int spaceChars);
 
 }

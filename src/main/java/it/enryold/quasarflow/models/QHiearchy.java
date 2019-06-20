@@ -87,9 +87,8 @@ public class QHiearchy {
         }
     }
 
-    protected void printMetrics(String prefix, boolean isTail) {
+    protected void printMetrics(String prefix, int spaceChars, boolean isTail) {
 
-        int spaceChars = 50;
 
 
         String metricString= this.flowable.getMetrics().stream().map(QMetric::toString).collect(Collectors.joining(" | "));
@@ -107,11 +106,11 @@ public class QHiearchy {
 
 
         for (int i = 0; i < nestedFlowables.size() - 1; i++) {
-            nestedFlowables.get(i).printMetrics(prefix + (isTail ? "    " : "│   "), false);
+            nestedFlowables.get(i).printMetrics(prefix + (isTail ? "    " : "│   "), spaceChars,false);
         }
         if (nestedFlowables.size() > 0) {
             nestedFlowables.get(nestedFlowables.size() - 1)
-                    .printMetrics(prefix + (isTail ?"    " : "│   "), true);
+                    .printMetrics(prefix + (isTail ?"    " : "│   "), spaceChars,true);
         }
     }
 
@@ -119,8 +118,8 @@ public class QHiearchy {
         print(name, false);
     }
 
-    public void printMetrics(String name){
-        printMetrics(name, false);
+    public void printMetrics(String name,  int spaceChars){
+        printMetrics(name, spaceChars, false);
     }
 
 }
