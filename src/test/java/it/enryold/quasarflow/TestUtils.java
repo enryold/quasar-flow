@@ -1,5 +1,6 @@
 package it.enryold.quasarflow;
 
+import co.paralleluniverse.fibers.Suspendable;
 import it.enryold.quasarflow.interfaces.IEmitterTask;
 import it.enryold.quasarflow.models.User;
 import org.slf4j.Logger;
@@ -25,6 +26,16 @@ public class TestUtils {
     {
         return publisherChannel -> {
             for(int i = 0; i<max; i++){ publisherChannel.sendOnChannel("String"+i); } };
+    }
+
+    @Suspendable
+    protected List<String> stringList(int max)
+    {
+         List<String> stringList = new ArrayList<>();
+         for(int i = 0; i<max; i++){
+             stringList.add("String"+i);
+         }
+         return stringList;
     }
 
 
