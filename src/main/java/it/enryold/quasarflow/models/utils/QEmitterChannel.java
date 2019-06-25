@@ -20,6 +20,7 @@ public class QEmitterChannel<T> {
         this.afterSendCallback = afterSendCallback;
     }
 
+
     public void sendOnChannel(T obj) throws InterruptedException, SuspendExecution {
         publisherChannel.send(obj);
         if(afterSendCallback != null){

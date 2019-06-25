@@ -1,6 +1,7 @@
 package it.enryold.quasarflow.kinesis.streams.consumer.v1;
 
 import co.paralleluniverse.fibers.SuspendExecution;
+import co.paralleluniverse.fibers.Suspendable;
 import co.paralleluniverse.strands.channels.Channel;
 import com.amazonaws.services.kinesis.clientlibrary.exceptions.InvalidStateException;
 import com.amazonaws.services.kinesis.clientlibrary.exceptions.ShutdownException;
@@ -66,6 +67,7 @@ public class RecordProcessor implements IRecordProcessor {
     }
 
     @Override
+    @Suspendable
     public void processRecords(List<Record> records, IRecordProcessorCheckpointer checkpointer) {
         log.debug("Processing " + records.size() + " records from " + shardId);
 
@@ -84,6 +86,7 @@ public class RecordProcessor implements IRecordProcessor {
      *
      * @param records Data records to be processed.
      */
+    @Suspendable
     private void processRecordsWithRetries(List<Record> records) {
         for (Record record : records) {
             boolean processedSuccessfully = false;
@@ -117,6 +120,7 @@ public class RecordProcessor implements IRecordProcessor {
      *
      * @param record The record to be processed.
      */
+    @Suspendable
     private void processSingleRecord(Record record) {
 
         log.debug("Received new object from partition key: "+record.getPartitionKey()+" with sequence number: "+record.getSequenceNumber());
@@ -147,6 +151,7 @@ public class RecordProcessor implements IRecordProcessor {
     /** Checkpoint with retries.
      * @param checkpointer
      */
+    @Suspendable
     private void checkpoint(IRecordProcessorCheckpointer checkpointer) {
         log.debug("Checkpointing shard " + shardId);
         for (int i = 0; i < retriesNumber; i++) {

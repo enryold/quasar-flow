@@ -1,6 +1,7 @@
 package it.enryold.quasarflow.kinesis.streams.producer.hashproviders.utils;
 
 
+import co.paralleluniverse.fibers.Suspendable;
 import com.amazonaws.services.kinesis.model.HashKeyRange;
 import it.enryold.quasarflow.kinesis.streams.producer.hashproviders.interfaces.IExplicitShardKeyHelper;
 

@@ -1,5 +1,6 @@
 package it.enryold.quasarflow.kinesis.utils;
 
+import co.paralleluniverse.fibers.Suspendable;
 import it.enryold.quasarflow.kinesis.utils.interfaces.ICompressionMapper;
 
 import java.io.ByteArrayOutputStream;
@@ -10,6 +11,7 @@ public class FnByteCompressionMapper implements ICompressionMapper {
 
 
     @Override
+    @Suspendable
     public Optional<byte[]> apply(byte[] bytes) {
 
         byte[] dataToCompress = bytes;

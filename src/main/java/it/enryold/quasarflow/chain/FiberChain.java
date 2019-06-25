@@ -5,7 +5,7 @@ import co.paralleluniverse.fibers.Fiber;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class FiberChain<E> {
+public class FiberChain<E> implements IChain<E> {
 
     private String chainName;
     private E object;
@@ -26,6 +26,7 @@ public class FiberChain<E> {
     private E getValue(){
         return object;
     }
+
 
     public <T> FiberChain<T> transform(String name, IChainFunction<E, T> fn){
 

@@ -1,10 +1,13 @@
 package it.enryold.quasarflow.kinesis.utils;
 
+import co.paralleluniverse.fibers.Suspendable;
+
 import java.util.function.Function;
 
 public class FnPrependNullBytesToByteArray implements Function<byte[], Function<Integer, byte[]>> {
 
     @Override
+    @Suspendable
     public Function<Integer, byte[]> apply(byte[] bytes) {
 
 

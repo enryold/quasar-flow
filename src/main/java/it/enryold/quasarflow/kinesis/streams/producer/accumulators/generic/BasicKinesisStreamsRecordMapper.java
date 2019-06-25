@@ -1,5 +1,6 @@
 package it.enryold.quasarflow.kinesis.streams.producer.accumulators.generic;
 
+import co.paralleluniverse.fibers.Suspendable;
 import it.enryold.quasarflow.kinesis.streams.producer.accumulators.interfaces.IKinesisStreamsByteMapper;
 import it.enryold.quasarflow.kinesis.streams.producer.accumulators.interfaces.IKinesisStreamsRecordMapper;
 import it.enryold.quasarflow.kinesis.streams.producer.accumulators.interfaces.IKinesisStreamsStringMapper;
@@ -24,6 +25,7 @@ public class BasicKinesisStreamsRecordMapper<I> implements IKinesisStreamsRecord
     }
 
     @Override
+    @Suspendable
     public Function<List<I>, List<ByteBuffer>> apply(IKinesisStreamsStringMapper<I> iiKinesisStreamsStringMapper, IKinesisStreamsByteMapper iKinesisStreamsByteMapper) {
 
 

@@ -1,6 +1,7 @@
 package it.enryold.quasarflow.kinesis.streams.models;
 
 
+import co.paralleluniverse.fibers.Suspendable;
 import com.amazonaws.services.kinesis.producer.KinesisProducer;
 import com.amazonaws.services.kinesis.producer.UserRecordResult;
 import it.enryold.quasarflow.interfaces.IConsumerTask;
@@ -34,10 +35,12 @@ public class KPLConsumerTask implements IConsumerTask<List<ByteBuffer>> {
 
 
     @Override
+    @Suspendable
     public void ingest(List<ByteBuffer> elms) {
         elms.forEach(this::send);
     }
 
+    @Suspendable
     private void send( ByteBuffer elm){
         ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(streamName,
                 partitionKey,

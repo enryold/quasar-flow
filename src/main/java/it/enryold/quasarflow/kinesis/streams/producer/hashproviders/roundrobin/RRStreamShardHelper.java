@@ -1,6 +1,7 @@
 package it.enryold.quasarflow.kinesis.streams.producer.hashproviders.roundrobin;
 
 
+import co.paralleluniverse.fibers.Suspendable;
 import it.enryold.quasarflow.kinesis.streams.producer.hashproviders.interfaces.IExplicitShardKeyHelper;
 import it.enryold.quasarflow.kinesis.streams.producer.hashproviders.interfaces.IStreamShardHelper;
 
