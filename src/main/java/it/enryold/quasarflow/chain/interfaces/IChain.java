@@ -1,8 +1,12 @@
-package it.enryold.quasarflow.chain;
+package it.enryold.quasarflow.chain.interfaces;
 
 import co.paralleluniverse.fibers.Suspendable;
+import it.enryold.quasarflow.chain.FiberChain;
 
 public interface IChain<E> {
+
+    @Suspendable
+    E getObject();
 
     @Suspendable
     <T> FiberChain<T> transform(String name, IChainFunction<E, T> fn);
