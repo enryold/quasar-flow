@@ -1,8 +1,13 @@
 package it.enryold.quasarflow.kinesis.streams.producer.accumulators.interfaces;
 
+import co.paralleluniverse.fibers.Suspendable;
+
 import java.util.Optional;
 import java.util.function.Function;
 
 @FunctionalInterface
-public interface IKinesisStreamsByteMapper extends Function<String, Optional<byte[]>> {
+public interface IKinesisStreamsByteMapper {
+
+    @Suspendable
+    Optional<byte[]> apply(String i);
 }

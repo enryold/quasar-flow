@@ -1,6 +1,7 @@
 package it.enryold.quasarflow.kinesis.streams.models;
 
 
+import co.paralleluniverse.fibers.Suspendable;
 import com.amazonaws.services.kinesis.producer.KinesisProducer;
 import com.amazonaws.services.kinesis.producer.UserRecordResult;
 import it.enryold.quasarflow.interfaces.IConsumerTask;
@@ -35,6 +36,7 @@ public class KPLConsumerTaskFactory implements IConsumerTaskFactory<List<ByteBuf
 
 
     @Override
+    @Suspendable
     public IConsumerTask<List<ByteBuffer>> build() {
         return KPLConsumerTask.Builder()
                 .withConsumerCallback(consumerCallback)

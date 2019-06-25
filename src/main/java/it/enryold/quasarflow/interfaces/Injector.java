@@ -2,5 +2,7 @@ package it.enryold.quasarflow.interfaces;
 
 import java.util.function.Consumer;
 
-public interface Injector<T> extends Consumer<T> {
+public interface Injector<T> {
+
+    void accept(T t);
 }

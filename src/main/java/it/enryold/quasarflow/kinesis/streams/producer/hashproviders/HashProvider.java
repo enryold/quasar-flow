@@ -1,6 +1,7 @@
 package it.enryold.quasarflow.kinesis.streams.producer.hashproviders;
 
 
+import co.paralleluniverse.fibers.Suspendable;
 import it.enryold.quasarflow.kinesis.streams.producer.hashproviders.interfaces.IExplicitHashProvider;
 import it.enryold.quasarflow.kinesis.streams.producer.hashproviders.interfaces.IStreamShardHelperFactory;
 

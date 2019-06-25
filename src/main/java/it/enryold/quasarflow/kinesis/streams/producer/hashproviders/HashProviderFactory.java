@@ -1,5 +1,6 @@
 package it.enryold.quasarflow.kinesis.streams.producer.hashproviders;
 
+import co.paralleluniverse.fibers.Suspendable;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import it.enryold.quasarflow.kinesis.streams.producer.hashproviders.abstracts.AbstractHashProviderFactory;
 import it.enryold.quasarflow.kinesis.streams.producer.hashproviders.interfaces.IExplicitHashProvider;

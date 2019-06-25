@@ -13,8 +13,7 @@ public class BasicKinesisStreamsAccumulatorLengthFunction<I> extends KinesisStre
         IKinesisStreamsStringMapper<I> stringMapper = kinesisStreamsMapper.getStringMapper();
         IKinesisStreamsByteMapper byteMapper = kinesisStreamsMapper.getByteMapper();
 
-        return Double.valueOf(stringMapper
-                .andThen(str -> byteMapper.apply(str).map(b -> b.length).orElse(0))
-                .apply(Collections.singletonList(i)));
+        String r = stringMapper.apply(Collections.singletonList(i));
+        return Double.valueOf(byteMapper.apply(r).map(b -> b.length).orElse(0));
     }
 }

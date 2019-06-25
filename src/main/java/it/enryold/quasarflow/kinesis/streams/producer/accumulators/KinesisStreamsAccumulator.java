@@ -1,5 +1,6 @@
 package it.enryold.quasarflow.kinesis.streams.producer.accumulators;
 
+import co.paralleluniverse.fibers.Suspendable;
 import it.enryold.quasarflow.abstracts.AbstractAccumulator;
 import it.enryold.quasarflow.components.IAccumulatorLengthFunction;
 import it.enryold.quasarflow.kinesis.streams.producer.accumulators.interfaces.IKinesisStreamsByteMapper;
@@ -22,6 +23,7 @@ public class KinesisStreamsAccumulator<I> extends AbstractAccumulator<I, ByteBuf
     }
 
     @Override
+    @Suspendable
     public List<ByteBuffer> getRecords() {
 
         IKinesisStreamsStringMapper<I> stringMapper = kinesisStreamsMapper.getStringMapper();
@@ -33,6 +35,7 @@ public class KinesisStreamsAccumulator<I> extends AbstractAccumulator<I, ByteBuf
     }
 
     @Override
+    @Suspendable
     public IAccumulatorLengthFunction<I> accumulatorLengthFunction() {
         return accumulatorLengthFunction;
     }

@@ -1,7 +1,10 @@
 package it.enryold.quasarflow.components;
 
-import java.util.function.Function;
+import co.paralleluniverse.fibers.Suspendable;
 
 @FunctionalInterface
-public interface IAccumulatorLengthFunction<I> extends Function<I, Double> {
+public interface IAccumulatorLengthFunction<I> {
+
+    @Suspendable
+    Double apply(I i);
 }

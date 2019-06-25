@@ -1,5 +1,6 @@
 package it.enryold.quasarflow.kinesis.streams.consumer.v1;
 
+import co.paralleluniverse.fibers.Suspendable;
 import co.paralleluniverse.strands.channels.Channel;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessor;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorFactory;
@@ -46,6 +47,7 @@ public class RecordProcessorFactory implements IRecordProcessorFactory {
 
 
     @Override
+    @Suspendable
     public IRecordProcessor createProcessor()
     {
         return new RecordProcessor()

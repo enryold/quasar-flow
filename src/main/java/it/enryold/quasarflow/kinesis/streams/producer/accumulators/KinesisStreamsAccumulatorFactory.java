@@ -1,5 +1,6 @@
 package it.enryold.quasarflow.kinesis.streams.producer.accumulators;
 
+import co.paralleluniverse.fibers.Suspendable;
 import it.enryold.quasarflow.components.IAccumulator;
 import it.enryold.quasarflow.components.IAccumulatorFactory;
 import it.enryold.quasarflow.kinesis.streams.producer.accumulators.generic.BasicKinesisStreamsAccumulatorLengthFunction;
@@ -41,6 +42,7 @@ public class KinesisStreamsAccumulatorFactory<I> implements IAccumulatorFactory<
 
 
     @Override
+    @Suspendable
     public IAccumulator<I, ByteBuffer> build() {
 
         KinesisStreamsMapper mapper = KinesisStreamsMapper.newBuilder()

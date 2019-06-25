@@ -1,6 +1,6 @@
 group 'it.enryold'
 
-version '0.6.5'
+version '0.6.6'
 
 apply plugin: 'java'
 apply plugin: 'idea'
@@ -11,7 +11,7 @@ sourceCompatibility = 1.8
 
 test {
     useJUnitPlatform()
-    jvmArgs '-javaagent:'+file('.')+'/quasar-core-0.7.10.jar' ,'-Xmx2800m', '-Dco.paralleluniverse.fibers.verifyInstrumentation=false', '-Dco.paralleluniverse.fibers.detectRunawayFibers=false'
+    jvmArgs '-javaagent:'+file('.')+'/quasar-core-0.7.10.jar' ,'-Xmx2800m', '-Dco.paralleluniverse.fibers.verifyInstrumentation=true', '-Dco.paralleluniverse.fibers.detectRunawayFibers=true'
 }
 
 tasks.withType(Test) {
