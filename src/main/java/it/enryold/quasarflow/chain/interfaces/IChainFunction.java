@@ -1,4 +1,4 @@
-package it.enryold.quasarflow.chain;
+package it.enryold.quasarflow.chain.interfaces;
 
 import co.paralleluniverse.fibers.Suspendable;
 
