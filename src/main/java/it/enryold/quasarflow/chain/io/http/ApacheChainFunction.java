@@ -60,7 +60,6 @@ public class ApacheChainFunction<T> implements IChainFunction<ApacheHttpRequest<
                 return ApacheHttpResponse.error(elm.getRequestId(), execution, response, elm.getAttachedDatas());
             }
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("HTTP request ERROR:" + e.getMessage());
             throw new RuntimeException(e);
         }
