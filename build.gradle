@@ -28,9 +28,7 @@ if (hasProperty('buildScan')) {
 
 repositories {
     mavenCentral()
-    maven { url "http://repo.opensourceagility.com/release" }
-    maven { url "http://repo.spring.io/libs-milestone" }
-    maven { url "http://repo.spring.io/libs-snapshot" }
+    maven { url "https://clojars.org/repo" }  // add repo for quasar
 }
 
 dependencies {
